@@ -1,5 +1,6 @@
-streamlit
-pillow==10.4.0
+streamlit==1.50.0
+Pillow==11.3.0
 opencv-python==4.12.0.88
 roboflow
-inference-sdk
+inference-sdk==0.58.1
+
