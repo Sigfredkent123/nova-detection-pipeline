@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import PIL
 import streamlit as st
+import sys
 import subprocess, json, os
 from pathlib import Path
 from PIL import Image
@@ -75,7 +76,7 @@ def run_model(script, image_path, save_dir, timeout=120):
 
     try:
         proc = subprocess.run(
-            ["python", script, image_path, str(save_dir)],
+            [sys.executable, script, image_path, str(save_dir)],
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -140,4 +141,5 @@ if file:
                 with open(z, "rb") as f:
                     st.download_button("Download crops ZIP", f, file_name=os.path.basename(z))
             st.json(results)
+
 
