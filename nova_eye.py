@@ -84,7 +84,13 @@ def main():
         "saved_eyes": saved_crops,
         "zip_file": zip_filename
     }
-    print(json.dumps(output, ensure_ascii=False))
+    # ✅ Send only clean JSON to stdout
+    sys.stdout.write(json.dumps(output, ensure_ascii=False))
+    sys.stdout.flush()
+    
+    # ✅ Send any other messages or logs to stderr instead
+    print("Eye detection completed successfully.", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
+
