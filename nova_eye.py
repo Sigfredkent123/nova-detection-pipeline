@@ -1,13 +1,24 @@
 # nova_eye.py
 # -*- coding: utf-8 -*-
 """
-NOVA Eye Detection - Pipeline Compatible (Headless OpenCV)
+NOVA Eye Detection - Headless Pipeline Compatible
 """
 
 import os
 import sys
 import json
 import zipfile
+
+# -----------------------------
+# Force headless OpenCV
+# -----------------------------
+try:
+    import cv2  # ensure opencv-python-headless is used
+except ImportError:
+    print(json.dumps({"error": "opencv-python-headless is not installed"}))
+    sys.exit(1)
+
+# Now safe to import inference_sdk
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 
@@ -32,15 +43,14 @@ def main():
     )
 
     try:
-        # Run the workflow
         result = client.run_workflow(
             workspace_name="newnova-mkn50",
             workflow_id="custom-workflow-2",
             images={"image": image_path}
         )
 
-        # New inference-sdk returns predictions directly
-        predictions = result["predictions"]
+        # ✅ New inference-sdk returns predictions in result["predictions"]
+        predictions = result.get("predictions", [])
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))
@@ -59,7 +69,6 @@ def main():
         x0, y0, x1, y1 = x - w / 2, y - h / 2, x + w / 2, y + h / 2
         draw.rectangle([x0, y0, x1, y1], outline="red", width=3)
         draw.text((x0, y0 - 10), f"{cls} {conf:.2f}", fill="red", font=font)
-
     image.save(annotated_path)
 
     # Save crops
@@ -93,6 +102,7 @@ def main():
         "zip_file": zip_filename
     }
 
+    # ✅ Only JSON to stdout
     sys.stdout.write(json.dumps(output, ensure_ascii=False))
     sys.stdout.flush()
     print("✅ Eye detection completed successfully.", file=sys.stderr)
