@@ -1,54 +1,58 @@
-import streamlit as st
-from pathlib import Path
-from nova_eye import detect_eyes
-import json
+# app.py
+# -*- coding: utf-8 -*-
+"""
+Streamlit app for NOVA Eye Detection
+"""
 
-st.set_page_config(page_title="NOVA Eye Detection", layout="wide")
-st.title("👁️ NOVA Eye Detection")
+import streamlit as st
+from nova_eye import detect_eyes
+from PIL import Image
+import os
+
+st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
+
+st.title("👁 NOVA Eye Detection")
+st.write("Upload an image, and the app will detect eyes and provide annotated results.")
 
 # Upload image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    # Save to temp location
-    temp_dir = Path("temp_uploads")
-    temp_dir.mkdir(exist_ok=True)
-    image_path = temp_dir / uploaded_file.name
+    # Save uploaded image temporarily
+    temp_dir = "temp_uploads"
+    os.makedirs(temp_dir, exist_ok=True)
+    image_path = os.path.join(temp_dir, uploaded_file.name)
     with open(image_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    
-    st.image(str(image_path), caption="Uploaded Image", use_column_width=True)
 
-    # Run detection
-    st.info("Detecting eyes...")
-    try:
-        result = detect_eyes(str(image_path))
+    st.image(image_path, caption="Uploaded Image", use_column_width=True)
 
-        # 🔹 DEBUG: show raw Roboflow result in app
-        st.subheader("Raw result from Roboflow")
-        st.text(json.dumps(result, indent=2, ensure_ascii=False))
+    if st.button("Run Eye Detection"):
+        try:
+            with st.spinner("Detecting eyes..."):
+                output_dir = "output_streamlit"
+                result = detect_eyes(image_path, output_dir)
 
-        # Handle predictions safely
-        # Some Roboflow workflows return a list of dicts instead of dict
-        if isinstance(result, list):
-            # Take predictions from the first item if it's a list
-            predictions = result[0].get("predictions", []) if result else []
-        else:
-            predictions = result.get("predictions", [])
+            st.success(f"✅ Detected {result['num_eyes']} eyes!")
 
-        st.success(f"✅ Detected {len(predictions)} eyes!")
+            # Display annotated image
+            annotated_image = Image.open(result["annotated_image"])
+            st.image(annotated_image, caption="Annotated Image", use_column_width=True)
 
-        # Show annotated image
-        st.image(result["annotated_image"], caption="Annotated Image", use_column_width=True)
+            # Display cropped eyes
+            st.write("Cropped Eyes:")
+            for crop_path in result["saved_eyes"]:
+                crop_img = Image.open(crop_path)
+                st.image(crop_img, width=150)
 
-        # Show cropped eyes
-        st.subheader("Cropped Eyes")
-        for crop in result["saved_eyes"]:
-            st.image(crop, width=150)
+            # Provide ZIP download
+            with open(result["zip_file"], "rb") as f:
+                st.download_button(
+                    label="Download Crops as ZIP",
+                    data=f,
+                    file_name="eye_crops.zip",
+                    mime="application/zip"
+                )
 
-        # Provide ZIP download
-        with open(result["zip_file"], "rb") as f:
-            st.download_button("Download all crops as ZIP", f, file_name="eye_crops.zip")
-
-    except Exception as e:
-        st.error(f"Error: {e}")
+        except Exception as e:
+            st.error(f"Error: {e}")
