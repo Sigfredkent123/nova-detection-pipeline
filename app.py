@@ -5,14 +5,13 @@ Streamlit app for NOVA Eye Detection
 """
 
 import streamlit as st
-from nova_eye import detect_eyes
 from PIL import Image
 import os
+from nova_eye import detect_eyes
 
 st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
-
 st.title("👁 NOVA Eye Detection")
-st.write("Upload an image, and the app will detect eyes and provide annotated results.")
+st.write("Upload an image to detect eyes and get annotated results.")
 
 # Upload image
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
