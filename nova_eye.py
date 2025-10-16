@@ -32,8 +32,7 @@ def main():
         result = client.run_workflow(
             workspace_name="newnova-mkn50",
             workflow_id="custom-workflow-2",
-            images={"image": image_path},
-            use_cache=True
+            images={"image": image_path}
         )
         predictions = result[0]["predictions"]["predictions"]
     except Exception as e:
@@ -93,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
