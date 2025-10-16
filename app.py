@@ -11,7 +11,7 @@ from nova_eye import detect_eyes
 
 st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
 st.title("👁 NOVA Eye Detection")
-st.write("Upload an image to detect eyes and get annotated results.")
+st.write("Upload an image, and the app will detect eyes and provide annotated results.")
 
 # Upload image
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
