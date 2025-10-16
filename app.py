@@ -40,14 +40,34 @@ def find_first_json(text: str):
 
 
 def extract_json_from_process_result(proc):
-    for stream_text in [proc.stdout, proc.stderr]:
-        candidate_str = find_first_json(stream_text)
-        if candidate_str:
-            try:
-                return json.loads(candidate_str)
-            except Exception as e:
-                return {"error": f"Failed to parse JSON: {str(e)}"}
+    # combine stdout + stderr
+    combined = ""
+    if proc.stdout:
+        combined += proc.stdout
+    if proc.stderr:
+        combined += proc.stderr
+
+    combined = combined.strip()
+    if not combined:
+        return {"error": "No output captured from subprocess"}
+
+    # Try to parse the entire text as JSON first
+    try:
+        return json.loads(combined)
+    except json.JSONDecodeError:
+        pass
+
+    # fallback: search for first JSON block
+    import re
+    match = re.search(r"\{.*\}", combined, flags=re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except Exception as e:
+            return {"error": f"Failed to parse JSON: {str(e)}"}
+
     return {"error": "No JSON output found from subprocess"}
+
 
 
 # -------------------------
@@ -137,3 +157,4 @@ if uploaded_file:
 
             # Show results in JSON
             st.json(results)
+
