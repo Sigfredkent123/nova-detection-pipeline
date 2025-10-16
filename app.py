@@ -1,6 +1,7 @@
 # app.py
 # -*- coding: utf-8 -*-
 import streamlit as st
+import base64
 import subprocess, json, os
 from pathlib import Path
 from PIL import Image
@@ -8,80 +9,128 @@ from PIL import Image
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-def run_model(script, image_path, save_dir):
-    """Run a model and return parsed JSON output."""
-    result = subprocess.run(
-        ["python", script, image_path, str(save_dir)],
-        capture_output=True, text=True
-    )
-    try:
-        detections = json.loads(result.stdout)
-        return detections
-    except json.JSONDecodeError:
-        st.error("Could not parse JSON output.")
-        st.text(result.stdout)
-        return None
+# ======== PAGE CONFIG ========
+st.set_page_config(page_title="NoVA-SCAN", layout="wide")
 
-st.set_page_config(page_title="NOVA Detection Suite", layout="centered")
-st.title("🧠 NOVA Detection Pipeline")
-st.markdown("Detect **eye/conjunctiva**, **palm**, and **nail** regions using Roboflow models.")
+# ======== CUSTOM CSS ========
+st.markdown("""
+<style>
+body {background-color: #f8faff;}
+.main {padding: 0;}
+h1, h2, h3, h4, h5 {color: #002b5b;}
+.section {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.card {
+    background: #f4f7ff;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.card img {
+    border-radius: 10px;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+.button-primary {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+}
+.center {text-align: center;}
+</style>
+""", unsafe_allow_html=True)
 
-# === EYE DETECTION ===
-st.header("👁️ Eye / Conjunctiva Detection")
-eye_file = st.file_uploader("Upload Eye Image", type=["jpg", "jpeg", "png"])
-if eye_file:
-    eye_path = OUTPUT_DIR / "eye_input.png"
-    with open(eye_path, "wb") as f:
-        f.write(eye_file.getbuffer())
+# ======== HEADER ========
+st.markdown("<h1 class='center'>🔬 What is NoVA-SCAN</h1>", unsafe_allow_html=True)
+st.write("""
+NoVA-Scan is an **AI-powered web application** that automatically detects key areas 
+from your images — the **Eyes**, **Palm**, and **Nail Beds** — using advanced object detection technology (YOLO).
+""")
 
-    if st.button("Run Eye Detection"):
-        eye_dir = OUTPUT_DIR / "eye"
-        eye_dir.mkdir(exist_ok=True)
-        eye_results = run_model("nova_eye.py", str(eye_path), eye_dir)
-        if eye_results:
-            st.image(Image.open(eye_results["annotated_image"]), caption="Annotated Eye Detection")
-            st.json(eye_results)
+# ======== 3 COLUMNS ========
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.image("https://i.imgur.com/Yw9eJbG.jpg", caption="Eyes", use_column_width=True)
+    st.write("Let NoVA-Scan detect your eye region automatically for a clear and accurate image.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# === PALM DETECTION ===
-st.header("✋ Palm Detection")
-palm_file = st.file_uploader("Upload Palm Image", type=["jpg", "jpeg", "png"])
-if palm_file:
-    palm_path = OUTPUT_DIR / "palm_input.png"
-    with open(palm_path, "wb") as f:
-        f.write(palm_file.getbuffer())
+with col2:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.image("https://i.imgur.com/r7p1u1J.jpg", caption="Palm", use_column_width=True)
+    st.write("Your palm area is identified instantly, helping the AI prepare it for detailed analysis.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    if st.button("Run Palm Detection"):
-        palm_dir = OUTPUT_DIR / "palm"
-        palm_dir.mkdir(exist_ok=True)
-        palm_results = run_model("finalpalm.py", str(palm_path), palm_dir)
-        if palm_results:
-            st.image(palm_results["annotated_image"], caption="Annotated Palm Detection")
-            st.json(palm_results)
+with col3:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.image("https://i.imgur.com/UpXVoZw.jpg", caption="Nail Beds", use_column_width=True)
+    st.write("NoVA-Scan pinpoints your nail area so the system can focus on the right details.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# === NAIL DETECTION ===
-st.header("💅 Nail Detection")
-nail_file = st.file_uploader("Upload Nail Image", type=["jpg", "jpeg", "png"])
-if nail_file:
-    nail_path = OUTPUT_DIR / "nail_input.png"
-    with open(nail_path, "wb") as f:
-        f.write(nail_file.getbuffer())
+# ======== HOW IT WORKS ========
+st.markdown("<div class='section center'><h2>⚙️ How It Works</h2></div>", unsafe_allow_html=True)
 
-    if st.button("Run Nail Detection"):
-        nail_dir = OUTPUT_DIR / "nail"
-        nail_dir.mkdir(exist_ok=True)
-        nail_results = run_model("nova_nail.py", str(nail_path), nail_dir)
-        if nail_results:
-            st.image(Image.open(nail_results["annotated_image"]), caption="Annotated Nail Detection")
-            st.json(nail_results)
+cols = st.columns(3)
+steps = [
+    ("1️⃣ Capture or Upload", "Take a photo or upload an image showing your eyes, palm, or nail beds."),
+    ("2️⃣ AI Detection", "NoVA-Scan uses advanced YOLO object detection to locate the key regions."),
+    ("3️⃣ Review Results", "View detected areas and confirm accuracy before saving or moving on.")
+]
+for i, (title, desc) in enumerate(steps):
+    with cols[i]:
+        st.markdown(f"<div class='card'><h3>{title}</h3><p>{desc}</p></div>", unsafe_allow_html=True)
 
-# === COMBINED RESULTS ===
-st.header("🧾 Combined JSON Output")
-if st.button("Generate Combined Report"):
-    combined = {}
-    for name in ["eye", "palm", "nail"]:
-        result_file = OUTPUT_DIR / name / "annotated_*"
-    combined_path = OUTPUT_DIR / "combined_results.json"
-    if os.path.exists(combined_path):
-        with open(combined_path) as f:
-            combined = json.load(f)
-        st.download_button("Download Combined JSON", json.dumps(combined, indent=2), "combined_results.json")
+# ======== START BUTTON ========
+st.markdown("<div class='center' style='margin-top:2rem;'>", unsafe_allow_html=True)
+if st.button("🚀 START NoVA-SCAN"):
+    st.session_state["show_scan"] = True
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ======== SCAN SECTION ========
+if st.session_state.get("show_scan"):
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.header("🔍 Run AI Detection")
+
+    option = st.selectbox("Choose Detection Type:", ["Eyes", "Palm", "Nails"])
+    file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+    def run_model(script, image_path, save_dir):
+        result = subprocess.run(["python", script, image_path, str(save_dir)], capture_output=True, text=True)
+        try:
+            detections = json.loads(result.stdout)
+            return detections
+        except json.JSONDecodeError:
+            st.error("Model output not valid JSON.")
+            st.text(result.stdout)
+            return None
+
+    if file:
+        image_path = OUTPUT_DIR / f"{option.lower()}_input.png"
+        with open(image_path, "wb") as f:
+            f.write(file.getbuffer())
+
+        if st.button(f"Run {option} Detection"):
+            script_map = {
+                "Eyes": "nova_eye.py",
+                "Palm": "finalpalm.py",
+                "Nails": "nova_nail.py"
+            }
+            save_dir = OUTPUT_DIR / option.lower()
+            save_dir.mkdir(exist_ok=True)
+            with st.spinner("Running model..."):
+                results = run_model(script_map[option], str(image_path), save_dir)
+            if results:
+                st.image(results["annotated_image"], caption=f"{option} Detection Result")
+                st.json(results)
+
+st.markdown("<p class='center' style='margin-top:3rem;'>See. Scan. Detect. — the NoVA way.</p>", unsafe_allow_html=True)
