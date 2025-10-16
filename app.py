@@ -8,6 +8,9 @@ import os
 from pathlib import Path
 from PIL import Image
 
+# -------------------------
+# Setup
+# -------------------------
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -15,7 +18,7 @@ st.set_page_config(page_title="NoVA-SCAN", layout="wide")
 
 
 # -------------------------
-# Utility: find first valid JSON
+# Utility: find first valid JSON in text
 # -------------------------
 def find_first_json(text: str):
     if not text:
@@ -32,8 +35,9 @@ def find_first_json(text: str):
                 depth -= 1
                 if depth == 0 and start_idx is not None:
                     candidate = text[start_idx : i + 1]
-                    return candidate  # return raw string
+                    return candidate  # raw string
     return None
+
 
 def extract_json_from_process_result(proc):
     for stream_text in [proc.stdout, proc.stderr]:
@@ -43,8 +47,7 @@ def extract_json_from_process_result(proc):
                 return json.loads(candidate_str)
             except Exception as e:
                 return {"error": f"Failed to parse JSON: {str(e)}"}
-    return None
-
+    return {"error": "No JSON output found from subprocess"}
 
 
 # -------------------------
@@ -70,7 +73,7 @@ def run_model(script_path, image_path, save_dir, timeout=120):
     if result:
         return result
 
-    # Nothing parsed -> show full debug
+    # Debug output if parsing failed
     st.error("❌ Model output not valid JSON (couldn't extract JSON from process output).")
     st.markdown(f"**Subprocess return code:** `{proc.returncode}`")
     if proc.stdout.strip():
@@ -110,6 +113,11 @@ if uploaded_file:
 
         if results:
             st.success(f"{option} detection completed!")
+
+            # Ensure results is always a dict
+            if not isinstance(results, dict):
+                results = {"results": results}
+
             # Annotated image
             annotated = results.get("annotated_image")
             if annotated and os.path.exists(annotated):
@@ -127,5 +135,5 @@ if uploaded_file:
                         "Download crops ZIP", f, file_name=os.path.basename(zip_file)
                     )
 
+            # Show results in JSON
             st.json(results)
-
