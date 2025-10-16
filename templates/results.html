@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detection Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="results-screen">
+  <div class="container">
+    <h2>Detection Results</h2>
+    {% if annotated_image %}
+      <img src="{{ url_for('static', filename=annotated_image) }}" alt="Detection Results">
+      <p><strong>Detected Objects:</strong> {{ num_eyes }}</p>
+      <a href="{{ url_for('static', filename=zip_file) }}" download>Download Crops</a>
+    {% endif %}
+    <div class="button-group">
+      <a href="{{ url_for('selection') }}" class="secondary-btn">Retake</a>
+      <a href="{{ url_for('landing') }}" class="primary-btn">Home</a>
+    </div>
+  </div>
+</body>
+</html>
