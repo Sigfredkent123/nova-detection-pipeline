@@ -13,26 +13,23 @@ import streamlit as st
 
 def extract_predictions(result):
     """
-    Extract list of predicted boxes from Roboflow run_workflow result.
-    This assumes the standard format returned by the workflow.
+    Safely extract the list of predictions from run_workflow result.
+    Handles nested structures returned by Roboflow.
     """
     if not result or not isinstance(result, list):
         return []
 
-    first = result[0]
-    if not isinstance(first, dict):
+    first_item = result[0]
+    if not isinstance(first_item, dict):
         return []
 
-    preds_outer = first.get("predictions", {})
-    if not isinstance(preds_outer, dict):
+    outer = first_item.get("predictions", {})
+    if isinstance(outer, dict):
+        return outer.get("predictions", [])
+    elif isinstance(outer, list):
+        return outer
+    else:
         return []
-
-    preds_list = preds_outer.get("predictions", [])
-    if not isinstance(preds_list, list):
-        return []
-
-    return preds_list
-
 
 
 def detect_eyes(image_path, output_dir="output/eye"):
@@ -53,17 +50,14 @@ def detect_eyes(image_path, output_dir="output/eye"):
         api_key=api_key
     )
 
-    # Run workflow
+    # Run workflow (pass image as list)
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images=[image_path]
+        images=[image_path]  # ✅ must be a list
     )
 
-    # Debug print for Streamlit
-    st.write("DEBUG: workflow result type:", type(result))
-    st.write(result)
-
+    # Extract predictions
     predictions = extract_predictions(result)
 
     # Annotate image
@@ -112,6 +106,3 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
-
-
-
