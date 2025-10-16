@@ -1,19 +1,15 @@
 # nova_eye.py
 # -*- coding: utf-8 -*-
 """
-NOVA Eye Detection - Streamlit / GUI Compatible
+NOVA Eye Detection - Streamlit Cloud Compatible
 """
 
 import os
-import sys
 import json
 import zipfile
-from PIL import Image, ImageDraw, ImageFont, ImageTk
+from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
-
-# Optional GUI dependencies
-import tkinter as tk
-from tkinter import filedialog, messagebox, Label
+import streamlit as st
 
 
 def detect_eyes(image_path, output_dir="output/eye"):
@@ -26,9 +22,11 @@ def detect_eyes(image_path, output_dir="output/eye"):
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"File not found: {image_path}")
 
+    api_key = st.secrets["roboflow_api_key"]
+
     client = InferenceHTTPClient(
         api_url="https://serverless.roboflow.com",
-        api_key="rXklt59qJc3uGQUVi7iZ"
+        api_key=api_key
     )
 
     # Run workflow
@@ -39,7 +37,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
         use_cache=True
     )
 
-    # Extract predictions correctly
+    # Extract predictions
     predictions = result[0]["predictions"]["predictions"] if result else []
 
     # Annotate image
@@ -89,81 +87,3 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
-
-
-# ---------------------------
-# Simple Local GUI (Tkinter)
-# ---------------------------
-def launch_gui():
-    def select_file():
-        file_path = filedialog.askopenfilename(
-            filetypes=[("Image files", "*.jpg *.jpeg *.png")]
-        )
-        if not file_path:
-            return
-        entry_path.delete(0, tk.END)
-        entry_path.insert(0, file_path)
-
-    def run_detection():
-        img_path = entry_path.get()
-        if not img_path:
-            messagebox.showwarning("No file", "Please select an image file first.")
-            return
-
-        try:
-            lbl_status.config(text="Detecting eyes...", fg="blue")
-            root.update()
-
-            result = detect_eyes(img_path)
-            annotated_path = result["annotated_image"]
-
-            lbl_status.config(text=f"Detected {result['num_eyes']} eyes!", fg="green")
-
-            # Show annotated image
-            img = Image.open(annotated_path)
-            img.thumbnail((400, 400))
-            img_tk = ImageTk.PhotoImage(img)
-            lbl_image.config(image=img_tk)
-            lbl_image.image = img_tk  # prevent GC
-
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-            lbl_status.config(text="Detection failed", fg="red")
-
-    # Tkinter GUI setup
-    root = tk.Tk()
-    root.title("NOVA Eye Detection")
-    root.geometry("500x600")
-
-    tk.Label(root, text="Select an image to detect eyes:", font=("Arial", 12)).pack(pady=10)
-
-    entry_path = tk.Entry(root, width=50)
-    entry_path.pack(pady=5)
-
-    tk.Button(root, text="Browse", command=select_file).pack(pady=5)
-    tk.Button(root, text="Run Detection", command=run_detection, bg="green", fg="white").pack(pady=10)
-
-    lbl_status = tk.Label(root, text="", font=("Arial", 12))
-    lbl_status.pack(pady=5)
-
-    lbl_image = Label(root)
-    lbl_image.pack(pady=10)
-
-    root.mainloop()
-
-
-# ---------------------------
-# CLI Mode
-# ---------------------------
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        # Run GUI if no arguments
-        launch_gui()
-    elif len(sys.argv) >= 2:
-        image_path = sys.argv[1]
-        output_dir = sys.argv[2] if len(sys.argv) > 2 else "output/eye"
-        try:
-            result = detect_eyes(image_path, output_dir)
-            print(json.dumps(result, indent=2, ensure_ascii=False))
-        except Exception as e:
-            print(json.dumps({"error": str(e)}))
