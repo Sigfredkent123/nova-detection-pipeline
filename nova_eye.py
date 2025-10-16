@@ -1,31 +1,20 @@
 # nova_eye.py
 # -*- coding: utf-8 -*-
 """
-NOVA Eye Detection - Headless Pipeline Compatible
+NOVA Eye Detection - Pipeline Compatible
 """
 
 import os
 import sys
 import json
 import zipfile
-
-# -----------------------------
-# Force headless OpenCV
-# -----------------------------
-try:
-    import cv2  # ensure opencv-python-headless is used
-except ImportError:
-    print(json.dumps({"error": "opencv-python-headless is not installed"}))
-    sys.exit(1)
-
-# Now safe to import inference_sdk
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
-
 
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: python nova_eye.py <image_path> [output_dir]"}))
+        sys.stdout.flush()
         return
 
     image_path = sys.argv[1]
@@ -34,6 +23,7 @@ def main():
 
     if not os.path.exists(image_path):
         print(json.dumps({"error": f"File not found: {image_path}"}))
+        sys.stdout.flush()
         return
 
     # Connect to Roboflow Workflow
@@ -49,11 +39,12 @@ def main():
             images={"image": image_path}
         )
 
-        # ✅ New inference-sdk returns predictions in result["predictions"]
+        # new inference-sdk returns predictions in result["predictions"]
         predictions = result.get("predictions", [])
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))
+        sys.stdout.flush()
         return
 
     # Annotate detections
@@ -102,7 +93,7 @@ def main():
         "zip_file": zip_filename
     }
 
-    # ✅ Only JSON to stdout
+    # ✅ Ensure only clean JSON to stdout
     sys.stdout.write(json.dumps(output, ensure_ascii=False))
     sys.stdout.flush()
     print("✅ Eye detection completed successfully.", file=sys.stderr)
