@@ -10,7 +10,6 @@ import os
 from nova_eye import detect_eyes
 
 st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
-
 st.title("👁 NOVA Eye Detection")
 st.write("Upload an image, and the app will detect eyes and provide annotated results.")
 
@@ -18,14 +17,13 @@ st.write("Upload an image, and the app will detect eyes and provide annotated re
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    # Save uploaded image temporarily
     temp_dir = "temp_uploads"
     os.makedirs(temp_dir, exist_ok=True)
     image_path = os.path.join(temp_dir, uploaded_file.name)
     with open(image_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.image(image_path, caption="Uploaded Image", width="stretch")
+    st.image(image_path, caption="Uploaded Image", use_container_width=True)
 
     if st.button("Run Eye Detection"):
         try:
@@ -38,7 +36,7 @@ if uploaded_file:
 
             # Display annotated image
             annotated_image = Image.open(result["annotated_image"])
-            st.image(annotated_image, caption="Annotated Image", width="stretch")
+            st.image(annotated_image, caption="Annotated Image", use_container_width=True)
 
             # Display cropped eyes
             if result["saved_eyes"]:
