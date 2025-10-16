@@ -7,51 +7,53 @@ NOVA Eye Detection - Streamlit Cloud Compatible
 import os
 import zipfile
 from PIL import Image, ImageDraw, ImageFont
-from inference_sdk import InferenceHTTPClient
+from roboflow import Roboflow
+from inference_sdk import InferenceAPIClient
 import streamlit as st
+
 
 def extract_predictions(result):
     """
-    Safely extract the list of prediction boxes from run_workflow result.
+    Safely extract the list of predictions from workflow result.
+    Handles both list and dict structures returned by inference-sdk 0.58.1.
     """
     if isinstance(result, list) and len(result) > 0:
-        first = result[0]  # first element is a dict
-        if isinstance(first, dict):
-            outer = first.get("predictions", {})
-            if isinstance(outer, dict):
-                return outer.get("predictions", [])
-            elif isinstance(outer, list):
-                return outer
+        first = result[0]
+    else:
+        first = result
+
+    if isinstance(first, dict):
+        preds = first.get("predictions", [])
+        if isinstance(preds, dict) and "predictions" in preds:
+            return preds["predictions"]
+        elif isinstance(preds, list):
+            return preds
     return []
+
 
 def detect_eyes(image_path, output_dir="output/eye"):
     """
     Detect eyes using Roboflow workflow, annotate image, save crops, and return metadata.
+    Compatible with inference-sdk==0.58.1
     """
     os.makedirs(output_dir, exist_ok=True)
 
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"File not found: {image_path}")
 
-    api_key = st.secrets.get("roboflow_api_key", None)
+    # Get Roboflow API key from Streamlit secrets
+    api_key = st.secrets.get("roboflow_api_key")
     if not api_key:
         raise ValueError("Roboflow API key not found in st.secrets!")
 
-    client = InferenceHTTPClient(
-        api_url="https://serverless.roboflow.com",
-        api_key=api_key
-    )
+    client = InferenceAPIClient(api_key)
 
-    # Pass images as a list
+    # Run workflow (images as list for this SDK version)
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
         images=[image_path]
     )
-
-    # Debug print to verify structure
-    st.write("DEBUG: workflow result type:", type(result))
-    st.write(result)
 
     # Extract predictions safely
     predictions = extract_predictions(result)
