@@ -4,38 +4,10 @@
 NOVA Eye Detection - Pipeline Compatible
 """
 
-import os, sys, json, zipfile, subprocess
-
-# -----------------------------------------------------
-# 🧩 Ensure libGL.so.1 exists BEFORE importing anything that touches cv2
-# -----------------------------------------------------
-def ensure_libgl():
-    """Ensure libGL.so.1 and related packages exist (installs them if missing)."""
-    try:
-        subprocess.run(
-            ["ls", "/usr/lib/x86_64-linux-gnu/libGL.so.1"],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        print("✅ libGL already present", file=sys.stderr)
-    except subprocess.CalledProcessError:
-        print("🔧 Installing system dependencies for OpenCV...", file=sys.stderr)
-        subprocess.run(["apt-get", "update"], check=False)
-        subprocess.run(
-            ["apt-get", "install", "-y",
-             "libgl1", "libglib2.0-0", "libsm6",
-             "libxext6", "libxrender1", "libgl1-mesa-glx"],
-            check=False
-        )
-
-ensure_libgl()  # MUST run before any other imports that might load OpenCV
-
-# -----------------------------------------------------
-# Now it’s safe to import inference_sdk or PIL
-# -----------------------------------------------------
+import os, sys, json, zipfile
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
+
 
 def main():
     if len(sys.argv) < 2:
