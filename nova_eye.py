@@ -4,11 +4,48 @@
 NOVA Eye Detection - Pipeline Compatible
 """
 
-import os, sys, json, zipfile
+import os
+import sys
+import json
+import zipfile
+import subprocess
+
+# -----------------------------------------------------
+# 🧩 Ensure libGL.so.1 exists BEFORE importing cv2 (used internally by inference_sdk)
+# -----------------------------------------------------
+def ensure_libgl():
+    """Install missing system dependencies for OpenCV if needed."""
+    try:
+        subprocess.run(
+            ["ldconfig", "-p"], capture_output=True, text=True, check=True
+        )
+        subprocess.run(
+            ["ls", "/usr/lib/x86_64-linux-gnu/libGL.so.1"],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        print("✅ libGL.so.1 found", file=sys.stderr)
+    except subprocess.CalledProcessError:
+        print("🔧 Installing OpenCV system dependencies...", file=sys.stderr)
+        subprocess.run(["apt-get", "update"], check=False)
+        subprocess.run([
+            "apt-get", "install", "-y",
+            "libgl1", "libglib2.0-0", "libsm6",
+            "libxext6", "libxrender1", "libgl1-mesa-glx"
+        ], check=False)
+        print("✅ System dependencies installed", file=sys.stderr)
+
+# Run this before any other imports
+ensure_libgl()
+
+# -----------------------------------------------------
+# Now safe to import inference_sdk and PIL
+# -----------------------------------------------------
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 
-
+# -----------------------------------------------------
+# Main detection logic
+# -----------------------------------------------------
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: python nova_eye.py <image_path> [output_dir]"}))
@@ -35,7 +72,6 @@ def main():
             images={"image": image_path}
         )
 
-        # ✅ Fix: new inference-sdk returns predictions directly in result["predictions"]
         predictions = result["predictions"]
 
     except Exception as e:
@@ -91,7 +127,6 @@ def main():
     sys.stdout.write(json.dumps(output, ensure_ascii=False))
     sys.stdout.flush()
     print("✅ Eye detection completed successfully.", file=sys.stderr)
-
 
 if __name__ == "__main__":
     main()
