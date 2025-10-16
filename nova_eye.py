@@ -57,7 +57,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images={image_path}
+        images=[image_path]
     )
 
     # Debug print for Streamlit
@@ -112,5 +112,6 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
+
 
 
