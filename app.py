@@ -1,63 +1,41 @@
 # app.py
-# -*- coding: utf-8 -*-
-"""
-Streamlit app for NOVA Eye Detection
-"""
-
-import streamlit as st
-from PIL import Image
 import os
+import streamlit as st
 from nova_eye import detect_eyes
+from PIL import Image
 
 st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
-st.title("👁 NOVA Eye Detection")
-st.write("Upload an image, and the app will detect eyes and provide annotated results.")
 
-# Upload image
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+st.title("NOVA Eye Detection Pipeline")
+st.write("Upload an image, and the model will detect eyes, annotate, and save crops.")
+
+uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
+    # Save uploaded image temporarily
     temp_dir = "temp_uploads"
     os.makedirs(temp_dir, exist_ok=True)
-    image_path = os.path.join(temp_dir, uploaded_file.name)
-    with open(image_path, "wb") as f:
+    temp_path = os.path.join(temp_dir, uploaded_file.name)
+    
+    with open(temp_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.image(image_path, caption="Uploaded Image", use_container_width=True)
+    st.info("Processing image...")
+    result = detect_eyes(temp_path)
 
-    if st.button("Run Eye Detection"):
-        try:
-            with st.spinner("Detecting eyes..."):
-                output_dir = "output_streamlit"
-                os.makedirs(output_dir, exist_ok=True)
-                result = detect_eyes(image_path, output_dir)
+    if "error" in result:
+        st.error(result["error"])
+    else:
+        st.success(f"Detected {result['num_eyes']} eyes!")
 
-            st.success(f"✅ Detected {result['num_eyes']} eyes!")
+        # Show annotated image
+        st.image(result["annotated_image"], caption="Annotated Image", use_column_width=True)
 
-            # Display annotated image
-            annotated_image = Image.open(result["annotated_image"])
-            st.image(annotated_image, caption="Annotated Image", use_container_width=True)
-
-            # Display cropped eyes
-            if result["saved_eyes"]:
-                st.write("Cropped Eyes:")
-                for crop_path in result["saved_eyes"]:
-                    crop_img = Image.open(crop_path)
-                    st.image(crop_img, width=150)
-
-            # Provide ZIP download
-            with open(result["zip_file"], "rb") as f:
-                st.download_button(
-                    label="Download Crops as ZIP",
-                    data=f,
-                    file_name="eye_crops.zip",
-                    mime="application/zip"
-                )
-
-        except Exception as e:
-            st.error(f"Error: {e}")
-
-        finally:
-            # Clean up uploaded file
-            if os.path.exists(image_path):
-                os.remove(image_path)
+        # Download zip of cropped eyes
+        with open(result["zip_file"], "rb") as f:
+            st.download_button(
+                label="Download Cropped Eyes ZIP",
+                data=f,
+                file_name="eye_crops.zip",
+                mime="application/zip"
+            )
