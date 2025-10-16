@@ -23,7 +23,7 @@ if uploaded_file:
     with open(image_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.image(image_path, caption="Uploaded Image", use_column_width=True)
+    st.image(image_path, caption="Uploaded Image", use_container_width=True)
 
     if st.button("Run Eye Detection"):
         try:
@@ -36,7 +36,7 @@ if uploaded_file:
 
             # Display annotated image
             annotated_image = Image.open(result["annotated_image"])
-            st.image(annotated_image, caption="Annotated Image", use_column_width=True)
+            st.image(annotated_image, caption="Annotated Image", use_container_width=True)
 
             # Display cropped eyes
             if result["saved_eyes"]:
