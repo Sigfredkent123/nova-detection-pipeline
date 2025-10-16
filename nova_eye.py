@@ -13,36 +13,26 @@ import streamlit as st
 
 def extract_predictions(result):
     """
-    Safely extract a list of predicted boxes from run_workflow result.
-    Handles multiple nested formats.
+    Extract list of predicted boxes from Roboflow run_workflow result.
+    This assumes the standard format returned by the workflow.
     """
-    if not result:
+    if not result or not isinstance(result, list):
         return []
 
-    # result is a list of length 1
-    if isinstance(result, list):
-        first = result[0]
-    else:
-        first = result
-
+    first = result[0]
     if not isinstance(first, dict):
         return []
 
     preds_outer = first.get("predictions", {})
+    if not isinstance(preds_outer, dict):
+        return []
 
-    # If outer is dict with key 'predictions'
-    if isinstance(preds_outer, dict):
-        preds = preds_outer.get("predictions", [])
-    elif isinstance(preds_outer, list):
-        preds = preds_outer
-    else:
-        preds = []
+    preds_list = preds_outer.get("predictions", [])
+    if not isinstance(preds_list, list):
+        return []
 
-    # Ensure we always return a list
-    if not isinstance(preds, list):
-        preds = []
+    return preds_list
 
-    return preds
 
 
 def detect_eyes(image_path, output_dir="output/eye"):
@@ -122,3 +112,4 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
+
