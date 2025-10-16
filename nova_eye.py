@@ -4,10 +4,11 @@
 NOVA Eye Detection - Pipeline Compatible
 """
 
-import sys, os, json, zipfile
-from PIL import Image, ImageDraw, ImageFont
-from inference_sdk import InferenceHTTPClient
+import os, sys, json, zipfile, subprocess
 
+# -----------------------------------------------------
+# 🧩 Ensure libGL.so.1 exists BEFORE importing anything that touches cv2
+# -----------------------------------------------------
 def ensure_libgl():
     """Ensure libGL.so.1 and related packages exist (installs them if missing)."""
     try:
@@ -17,9 +18,9 @@ def ensure_libgl():
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
-        # ✅ libGL is present
+        print("✅ libGL already present", file=sys.stderr)
     except subprocess.CalledProcessError:
-        print("Installing system dependencies for OpenCV...", file=sys.stderr)
+        print("🔧 Installing system dependencies for OpenCV...", file=sys.stderr)
         subprocess.run(["apt-get", "update"], check=False)
         subprocess.run(
             ["apt-get", "install", "-y",
@@ -28,7 +29,13 @@ def ensure_libgl():
             check=False
         )
 
-ensure_libgl()
+ensure_libgl()  # MUST run before any other imports that might load OpenCV
+
+# -----------------------------------------------------
+# Now it’s safe to import inference_sdk or PIL
+# -----------------------------------------------------
+from PIL import Image, ImageDraw, ImageFont
+from inference_sdk import InferenceHTTPClient
 
 def main():
     if len(sys.argv) < 2:
@@ -106,14 +113,11 @@ def main():
         "saved_eyes": saved_crops,
         "zip_file": zip_filename
     }
-    # ✅ Send only clean JSON to stdout
+
     sys.stdout.write(json.dumps(output, ensure_ascii=False))
     sys.stdout.flush()
-    
-    # ✅ Send any other messages or logs to stderr instead
-    print("Eye detection completed successfully.", file=sys.stderr)
+    print("✅ Eye detection completed successfully.", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()
-
-
