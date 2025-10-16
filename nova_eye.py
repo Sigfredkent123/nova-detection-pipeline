@@ -5,7 +5,6 @@ NOVA Eye Detection - Streamlit Cloud Compatible
 """
 
 import os
-import json
 import zipfile
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
@@ -22,6 +21,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"File not found: {image_path}")
 
+    # Get API key from Streamlit secrets
     api_key = st.secrets["roboflow_api_key"]
 
     client = InferenceHTTPClient(
@@ -33,10 +33,10 @@ def detect_eyes(image_path, output_dir="output/eye"):
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images={"image": image_path},
+        images={"image": image_path}  # removed use_cache
     )
 
-    # Extract predictions
+    # Handle list response correctly
     predictions = result[0]["predictions"]["predictions"] if result else []
 
     # Annotate image
@@ -86,4 +86,3 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
-
