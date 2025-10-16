@@ -8,6 +8,28 @@ import sys, os, json, zipfile
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 
+def ensure_libgl():
+    """Ensure libGL.so.1 and related packages exist (installs them if missing)."""
+    try:
+        subprocess.run(
+            ["ls", "/usr/lib/x86_64-linux-gnu/libGL.so.1"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        # ✅ libGL is present
+    except subprocess.CalledProcessError:
+        print("Installing system dependencies for OpenCV...", file=sys.stderr)
+        subprocess.run(["apt-get", "update"], check=False)
+        subprocess.run(
+            ["apt-get", "install", "-y",
+             "libgl1", "libglib2.0-0", "libsm6",
+             "libxext6", "libxrender1", "libgl1-mesa-glx"],
+            check=False
+        )
+
+ensure_libgl()
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: python nova_eye.py <image_path> [output_dir]"}))
@@ -93,4 +115,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
