@@ -1,6 +1,5 @@
 # app.py
 # -*- coding: utf-8 -*-
-import PIL
 import streamlit as st
 import sys
 import subprocess, json, os
@@ -141,5 +140,6 @@ if file:
                 with open(z, "rb") as f:
                     st.download_button("Download crops ZIP", f, file_name=os.path.basename(z))
             st.json(results)
+
 
 
