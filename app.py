@@ -1,162 +1,39 @@
-# app.py
-# -*- coding: utf-8 -*-
 import streamlit as st
-import sys
-import subprocess
-import json
-import os
 from pathlib import Path
-from PIL import Image
+from nova_eye import detect_eyes
 
-# -------------------------
-# Setup
-# -------------------------
-OUTPUT_DIR = Path("output")
-OUTPUT_DIR.mkdir(exist_ok=True)
+st.set_page_config(page_title="NOVA Eye Detection", layout="wide")
+st.title("👁️ NOVA Eye Detection")
 
-st.set_page_config(page_title="NoVA-SCAN", layout="wide")
-
-
-# -------------------------
-# Utility: find first valid JSON in text
-# -------------------------
-def find_first_json(text: str):
-    if not text:
-        return None
-    start_idx = None
-    depth = 0
-    for i, ch in enumerate(text):
-        if ch == "{":
-            if depth == 0:
-                start_idx = i
-            depth += 1
-        elif ch == "}":
-            if depth > 0:
-                depth -= 1
-                if depth == 0 and start_idx is not None:
-                    candidate = text[start_idx : i + 1]
-                    return candidate  # raw string
-    return None
-
-
-def extract_json_from_process_result(proc):
-    # combine stdout + stderr
-    combined = ""
-    if proc.stdout:
-        combined += proc.stdout
-    if proc.stderr:
-        combined += proc.stderr
-
-    combined = combined.strip()
-    if not combined:
-        return {"error": "No output captured from subprocess"}
-
-    # Try to parse the entire text as JSON first
-    try:
-        return json.loads(combined)
-    except json.JSONDecodeError:
-        pass
-
-    # fallback: search for first JSON block
-    import re
-    match = re.search(r"\{.*\}", combined, flags=re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group())
-        except Exception as e:
-            return {"error": f"Failed to parse JSON: {str(e)}"}
-
-    return {"error": "No JSON output found from subprocess"}
-
-
-
-# -------------------------
-# Run detection subprocess
-# -------------------------
-def run_model(script_path, image_path, save_dir, timeout=120):
-    if not os.path.exists(script_path):
-        st.error(f"Script not found: {script_path}")
-        return None
-
-    try:
-        proc = subprocess.run(
-            [sys.executable, "-u", script_path, image_path, str(save_dir)],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-
-    except subprocess.TimeoutExpired:
-        st.error(f"Model process timed out after {timeout}s.")
-        return None
-
-    result = extract_json_from_process_result(proc)
-    if result:
-        return result
-
-    # Debug output if parsing failed
-    st.error("❌ Model output not valid JSON (couldn't extract JSON from process output).")
-    st.markdown(f"**Subprocess return code:** `{proc.returncode}`")
-    if proc.stdout.strip():
-        st.markdown("**--- Stdout ---**")
-        st.code(proc.stdout[:10000])
-    if proc.stderr.strip():
-        st.markdown("**--- Stderr ---**")
-        st.code(proc.stderr[:10000])
-    return None
-
-
-# -------------------------
-# Streamlit UI
-# -------------------------
-st.title("NoVA-SCAN — Run Detection")
-
-option = st.selectbox("Choose Detection Type:", ["Eyes", "Palm", "Nails"])
+# Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    image_path = OUTPUT_DIR / f"{option.lower()}_input.png"
+    # Save to a temp location
+    temp_dir = Path("temp_uploads")
+    temp_dir.mkdir(exist_ok=True)
+    image_path = temp_dir / uploaded_file.name
     with open(image_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
+    
+    st.image(str(image_path), caption="Uploaded Image", use_column_width=True)
 
-    if st.button(f"Run {option} Detection"):
-        script_map = {
-            "Eyes": "nova_eye.py",  # full OpenCV script
-            "Palm": "finalpalm.py",
-            "Nails": "nova_nail.py",
-        }
+    # Run detection
+    st.info("Detecting eyes...")
+    try:
+        result = detect_eyes(str(image_path))
+        st.success(f"✅ Detected {result['num_eyes']} eyes!")
 
-        save_dir = OUTPUT_DIR / option.lower()
-        save_dir.mkdir(exist_ok=True)
+        # Show annotated image
+        st.image(result["annotated_image"], caption="Annotated Image", use_column_width=True)
 
-        with st.spinner(f"Running {option} detection..."):
-            results = run_model(script_map[option], str(image_path), save_dir)
+        # Show crops
+        st.subheader("Cropped Eyes")
+        for crop in result["saved_eyes"]:
+            st.image(crop, width=150)
 
-        if results:
-            st.success(f"{option} detection completed!")
-
-            # Ensure results is always a dict
-            if not isinstance(results, dict):
-                results = {"results": results}
-
-            # Annotated image
-            annotated = results.get("annotated_image")
-            if annotated and os.path.exists(annotated):
-                st.image(annotated, caption="Annotated Image", use_column_width=True)
-                with open(annotated, "rb") as f:
-                    st.download_button(
-                        "Download annotated image", f, file_name=os.path.basename(annotated)
-                    )
-
-            # ZIP of crops
-            zip_file = results.get("zip_file")
-            if zip_file and os.path.exists(zip_file):
-                with open(zip_file, "rb") as f:
-                    st.download_button(
-                        "Download crops ZIP", f, file_name=os.path.basename(zip_file)
-                    )
-
-            # Show results in JSON
-            st.json(results)
-
-
+        # Download zip
+        with open(result["zip_file"], "rb") as f:
+            st.download_button("Download all crops as ZIP", f, file_name="eye_crops.zip")
+    except Exception as e:
+        st.error(f"Error: {e}")
