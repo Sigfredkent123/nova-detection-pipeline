@@ -10,20 +10,40 @@ from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 import streamlit as st
 
+
 def extract_predictions(result):
     """
-    Safely extract the list of predicted boxes from run_workflow result.
-    Returns an empty list if structure is unexpected.
+    Safely extract a list of predicted boxes from run_workflow result.
+    Handles multiple nested formats.
     """
-    if isinstance(result, list) and len(result) > 0:
+    if not result:
+        return []
+
+    # result is a list of length 1
+    if isinstance(result, list):
         first = result[0]
-        if isinstance(first, dict):
-            preds_dict = first.get("predictions", {})
-            if isinstance(preds_dict, dict):
-                return preds_dict.get("predictions", [])
-            elif isinstance(preds_dict, list):
-                return preds_dict
-    return []
+    else:
+        first = result
+
+    if not isinstance(first, dict):
+        return []
+
+    preds_outer = first.get("predictions", {})
+
+    # If outer is dict with key 'predictions'
+    if isinstance(preds_outer, dict):
+        preds = preds_outer.get("predictions", [])
+    elif isinstance(preds_outer, list):
+        preds = preds_outer
+    else:
+        preds = []
+
+    # Ensure we always return a list
+    if not isinstance(preds, list):
+        preds = []
+
+    return preds
+
 
 def detect_eyes(image_path, output_dir="output/eye"):
     """
@@ -34,7 +54,6 @@ def detect_eyes(image_path, output_dir="output/eye"):
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"File not found: {image_path}")
 
-    # Get API key from Streamlit secrets
     api_key = st.secrets.get("roboflow_api_key", None)
     if not api_key:
         raise ValueError("Roboflow API key not found in st.secrets!")
@@ -51,6 +70,10 @@ def detect_eyes(image_path, output_dir="output/eye"):
         images={"image": image_path}
     )
 
+    # Debug print for Streamlit
+    st.write("DEBUG: workflow result type:", type(result))
+    st.write(result)
+
     predictions = extract_predictions(result)
 
     # Annotate image
@@ -61,7 +84,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
 
     for pred in predictions:
         x, y, w, h = pred["x"], pred["y"], pred["width"], pred["height"]
-        cls = pred["class"]
+        cls = pred.get("class", "eye")
         conf = pred.get("confidence", 1)
         x0, y0, x1, y1 = x - w / 2, y - h / 2, x + w / 2, y + h / 2
         draw.rectangle([x0, y0, x1, y1], outline="red", width=3)
@@ -77,7 +100,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
 
     for i, pred in enumerate(predictions):
         x, y, w, h = pred["x"], pred["y"], pred["width"], pred["height"]
-        cls = pred["class"]
+        cls = pred.get("class", "eye")
         x0, y0, x1, y1 = int(x - w / 2), int(y - h / 2), int(x + w / 2), int(y + h / 2)
         crop = orig.crop((x0, y0, x1, y1))
         crop_path = os.path.join(crop_dir, f"crop_{i}_{cls}.png")
