@@ -1,5 +1,5 @@
 streamlit
-pillow
-opencv-python
+pillow==10.4.0
+opencv-python-headless
 roboflow
 inference-sdk
