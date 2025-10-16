@@ -1,10 +1,8 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
-.env
-*.env
-*.DS_Store
-*.git
-*.gitignore
+*.zip
+*.png
+*.jpg
+*.jpeg
 output/
