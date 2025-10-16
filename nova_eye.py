@@ -19,7 +19,11 @@ def detect_eyes(image_path, output_dir="output/eye"):
         workflow_id="custom-workflow-2",
         images=[image_path]
     )
-
+    
+    # DEBUG: see what the response actually looks like
+    print(result)  # <--- put it here
+    sys.stdout.flush()  # ensures it prints on Streamlit Cloud
+    
     predictions = result.get("predictions", [])
 
     # Annotate detections
@@ -65,4 +69,5 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "saved_eyes": saved_crops,
         "zip_file": zip_filename
     }
+
 
