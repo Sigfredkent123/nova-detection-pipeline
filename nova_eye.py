@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 
 def main():
+    print("Python executable:", sys.executable, file=sys.stderr)
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: python nova_eye.py <image_path> [output_dir]"}))
         sys.stdout.flush()
@@ -101,4 +102,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
