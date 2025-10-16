@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Parameter</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="selection-screen">
+  <div class="container">
+    <h2>Select Parameter</h2>
+    <form action="{{ url_for('camera') }}" method="get">
+      <button class="param-btn" name="param" value="eye">👁️ Eye</button>
+      <button class="param-btn" name="param" value="palm">✋ Palm</button>
+      <button class="param-btn" name="param" value="nailbed">💅 Nailbed</button>
+    </form>
+    <a href="{{ url_for('landing') }}" class="back-btn">← Back</a>
+  </div>
+</body>
+</html>
