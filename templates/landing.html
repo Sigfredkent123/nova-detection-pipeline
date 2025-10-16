@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NOVA Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="landing-screen">
+  <div class="container">
+    <h1>NOVA Detection System</h1>
+    <p>Choose a health parameter to start detection.</p>
+    <form action="{{ url_for('selection') }}" method="get">
+      <button class="primary-btn">Start</button>
+    </form>
+  </div>
+</body>
+</html>
