@@ -1,6 +1,5 @@
 streamlit==1.50.0
 Pillow==11.3.0
-opencv-python==4.12.0.88
+opencv-python==4.10.0.84   # within inference-sdk constraints
 roboflow
 inference-sdk==0.58.1
-
