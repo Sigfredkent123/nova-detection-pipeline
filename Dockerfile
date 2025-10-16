@@ -1,20 +1,17 @@
-# Use the exact Python version you want
-FROM python:3.11.9-slim
+# Use a lightweight base image
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy local files
+# Copy all files
 COPY . .
 
-# Upgrade pip
-RUN pip install --upgrade pip
-
 # Install dependencies
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the Streamlit port
-EXPOSE 8080
+# Expose port for Render
+EXPOSE 10000
 
-# Streamlit entrypoint
-CMD ["streamlit", "run", "app.py", "--server.port", "8080", "--server.address", "0.0.0.0"]
+# Start Flask app
+CMD ["python", "app.py"]
