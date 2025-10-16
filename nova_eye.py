@@ -17,8 +17,9 @@ def detect_eyes(image_path, output_dir="output/eye"):
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images={"image": image_path}
+        images=[image_path]
     )
+
     predictions = result.get("predictions", [])
 
     # Annotate detections
@@ -64,3 +65,4 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "saved_eyes": saved_crops,
         "zip_file": zip_filename
     }
+
