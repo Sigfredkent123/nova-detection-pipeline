@@ -80,11 +80,12 @@ def run_model(script_path, image_path, save_dir, timeout=120):
 
     try:
         proc = subprocess.run(
-            [sys.executable, script_path, image_path, str(save_dir)],
+            [sys.executable, "-u", script_path, image_path, str(save_dir)],
             capture_output=True,
             text=True,
             timeout=timeout,
         )
+
     except subprocess.TimeoutExpired:
         st.error(f"Model process timed out after {timeout}s.")
         return None
@@ -157,4 +158,5 @@ if uploaded_file:
 
             # Show results in JSON
             st.json(results)
+
 
