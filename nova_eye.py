@@ -34,7 +34,10 @@ def main():
             workflow_id="custom-workflow-2",
             images={"image": image_path}
         )
+
+        # ✅ Fix: new inference-sdk returns predictions directly in result["predictions"]
         predictions = result["predictions"]
+
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         return
@@ -92,5 +95,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
