@@ -1,34 +1,40 @@
-# app.py
-import streamlit as st
-import os
-import tempfile
-from nova_eye import main as process_image
+from flask import Flask, render_template, request, send_file
+import subprocess, json, os, tempfile
 
-st.set_page_config(page_title="NOVA Eye Detection", layout="centered")
+app = Flask(__name__)
 
-st.title("NOVA Eye Detection Pipeline")
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        if "image" not in request.files:
+            return "No file part", 400
+        file = request.files["image"]
+        if file.filename == "":
+            return "No selected file", 400
 
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+        # Save uploaded file
+        tmp_dir = tempfile.mkdtemp()
+        image_path = os.path.join(tmp_dir, file.filename)
+        file.save(image_path)
 
-if uploaded_file:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp:
-        tmp.write(uploaded_file.read())
-        tmp_path = tmp.name
-
-    output_dir = "output/eye"
-    result = process_image(tmp_path, output_dir)
-
-    if "error" in result:
-        st.error(result["error"])
-    else:
-        st.image(result["annotated_image"], caption="Annotated Image", use_column_width=True)
-        st.write(f"Detected Eyes: {result['num_eyes']}")
-
-        # Download zip of crops
-        with open(result["zip_file"], "rb") as f:
-            st.download_button(
-                label="Download Eye Crops",
-                data=f,
-                file_name="eye_crops.zip",
-                mime="application/zip"
+        # Run the detection pipeline
+        try:
+            result = subprocess.run(
+                ["python", "nova_eye.py", image_path],
+                capture_output=True, text=True, check=True
             )
+            data = json.loads(result.stdout)
+            annotated_path = data.get("annotated_image")
+            if not annotated_path or not os.path.exists(annotated_path):
+                return "Detection failed.", 500
+            return send_file(annotated_path, mimetype="image/png")
+        except subprocess.CalledProcessError as e:
+            return f"Error: {e.stderr}", 500
+        except Exception as e:
+            return f"Error: {e}", 500
+
+    return render_template("index.html")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
