@@ -11,6 +11,21 @@ from inference_sdk import InferenceHTTPClient
 import streamlit as st
 
 
+def extract_predictions(result):
+    """
+    Safely extract the list of predicted boxes from run_workflow result.
+    """
+    if isinstance(result, list) and len(result) > 0:
+        first = result[0]
+        if isinstance(first, dict) and "predictions" in first:
+            preds_dict = first["predictions"]
+            if isinstance(preds_dict, dict) and "predictions" in preds_dict:
+                return preds_dict["predictions"]
+            elif isinstance(preds_dict, list):
+                return preds_dict
+    return []
+
+
 def detect_eyes(image_path, output_dir="output/eye"):
     """
     Detect eyes using Roboflow workflow,
@@ -36,8 +51,8 @@ def detect_eyes(image_path, output_dir="output/eye"):
         images={"image": image_path}  # removed use_cache
     )
 
-    # Handle list response correctly
-    predictions = result[0]["predictions"]["predictions"] if result else []
+    # Robustly extract predictions
+    predictions = extract_predictions(result)
 
     # Annotate image
     annotated_path = os.path.join(output_dir, f"annotated_{os.path.basename(image_path)}")
