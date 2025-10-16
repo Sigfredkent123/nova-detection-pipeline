@@ -1,63 +1,110 @@
 # app.py
 # -*- coding: utf-8 -*-
 import streamlit as st
-import subprocess, json, os, re
+import subprocess, json, os
 from pathlib import Path
 from PIL import Image
 
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# ======== PAGE CONFIG ========
 st.set_page_config(page_title="NoVA-SCAN", layout="wide")
 
-# ======== Helper: Extract JSON from any stdout ========
-def extract_json(text):
-    """Extract the first valid JSON object from mixed stdout text."""
-    json_pattern = re.compile(r'\{.*\}', re.DOTALL)
-    match = json_pattern.search(text)
-    if match:
-        try:
-            return json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return None
+
+# -------------------------
+# Utility: find balanced JSON
+# -------------------------
+def find_first_json(text: str):
+    """
+    Scan text for the first balanced JSON object (matching braces).
+    Returns the JSON string or None.
+    """
+    if not text:
+        return None
+
+    start_idx = None
+    depth = 0
+    for i, ch in enumerate(text):
+        if ch == "{":
+            if depth == 0:
+                start_idx = i
+            depth += 1
+        elif ch == "}":
+            if depth > 0:
+                depth -= 1
+                if depth == 0 and start_idx is not None:
+                    candidate = text[start_idx:i + 1]
+                    # try to parse candidate
+                    try:
+                        json.loads(candidate)
+                        return candidate
+                    except json.JSONDecodeError:
+                        # not valid JSON; continue searching
+                        start_idx = None
+                        depth = 0
     return None
 
-def run_model(script, image_path, save_dir):
-    """Run a detection script and parse its JSON output safely."""
-    result = subprocess.run(
-        ["python", script, image_path, str(save_dir)],
-        capture_output=True, text=True
-    )
-    detections = extract_json(result.stdout)
-    if not detections:
-        st.error("❌ Model output not valid JSON.")
-        st.text(result.stdout)  # show debug
-    return detections
 
-# ======== STYLES ========
-st.markdown("""
-<style>
-body {background-color: #f8faff;}
-h1, h2, h3, h4 {color: #002b5b;}
-.section {background: white; border-radius: 15px; padding: 2rem; margin-top: 1.5rem; 
-box-shadow: 0 2px 10px rgba(0,0,0,0.1);}
-.center {text-align: center;}
-.button-primary {background-color: #2563eb; color: white; padding: 0.8rem 2rem; border-radius: 25px; text-decoration: none;}
-.card {background: #f4f7ff; border-radius: 12px; padding: 1rem; text-align: center;}
-</style>
-""", unsafe_allow_html=True)
+def extract_json_from_process_result(proc):
+    """
+    Given a subprocess.CompletedProcess, try to extract JSON from stdout first,
+    then stderr. Return a dict (parsed JSON) or None.
+    """
+    # prefer stdout
+    for stream_text, name in [(proc.stdout, "stdout"), (proc.stderr, "stderr")]:
+        candidate = find_first_json(stream_text)
+        if candidate:
+            try:
+                return json.loads(candidate)
+            except Exception:
+                # fallthrough to next
+                pass
+    return None
 
-# ======== HEADER ========
-st.markdown("<h1 class='center'>🔬 What is NoVA-SCAN</h1>", unsafe_allow_html=True)
-st.write("""
-NoVA-Scan is an **AI-powered web application** that detects key areas 
-from your images — the **Eyes**, **Palm**, and **Nail Beds** — using YOLO object detection.
-""")
 
-# ======== Upload + Detection Interface ========
-st.markdown("<hr>", unsafe_allow_html=True)
-st.header("🧠 Run NoVA Detection")
+# -------------------------
+# Run model with robust parsing
+# -------------------------
+def run_model(script, image_path, save_dir, timeout=120):
+    """Run detection script and return parsed JSON or None. Shows helpful debug on failure."""
+    # Ensure the script path exists
+    if not os.path.exists(script):
+        st.error(f"Script not found: {script}")
+        return None
+
+    try:
+        proc = subprocess.run(
+            ["python", script, image_path, str(save_dir)],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as e:
+        st.error(f"Model process timed out after {timeout}s.")
+        return None
+
+    parsed = extract_json_from_process_result(proc)
+    if parsed:
+        return parsed
+
+    # Nothing parsed -> show debugging info
+    st.error("❌ Model output not valid JSON (couldn't extract JSON from process output).")
+    st.markdown("**Subprocess return code:** `%s`" % proc.returncode)
+
+    if proc.stdout and proc.stdout.strip():
+        st.markdown("**--- Stdout ---**")
+        st.code(proc.stdout[:10000])  # limit output shown
+    if proc.stderr and proc.stderr.strip():
+        st.markdown("**--- Stderr ---**")
+        st.code(proc.stderr[:10000])
+
+    return None
+
+
+# -------------------------
+# Streamlit UI (minimal, compatible)
+# -------------------------
+st.title("NoVA-SCAN — Run Detection")
 
 option = st.selectbox("Choose Detection Type:", ["Eyes", "Palm", "Nails"])
 file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
@@ -67,7 +114,7 @@ if file:
     with open(image_path, "wb") as f:
         f.write(file.getbuffer())
 
-    if st.button(f"🚀 Run {option} Detection"):
+    if st.button(f"Run {option} Detection"):
         script_map = {
             "Eyes": "nova_eye.py",
             "Palm": "finalpalm.py",
@@ -75,19 +122,20 @@ if file:
         }
         save_dir = OUTPUT_DIR / option.lower()
         save_dir.mkdir(exist_ok=True)
-        with st.spinner(f"Running {option} model... please wait"):
+        with st.spinner("Running model..."):
             results = run_model(script_map[option], str(image_path), save_dir)
 
         if results:
-            st.success(f"✅ {option} detection completed!")
-            st.image(results["annotated_image"], caption=f"{option} Detection Result", use_column_width=True)
-            st.download_button("⬇️ Download Annotated Image",
-                               open(results["annotated_image"], "rb"),
-                               file_name=os.path.basename(results["annotated_image"]))
-            if "zip_file" in results and os.path.exists(results["zip_file"]):
-                st.download_button("📦 Download Cropped ZIP",
-                                   open(results["zip_file"], "rb"),
-                                   file_name=os.path.basename(results["zip_file"]))
+            st.success(f"{option} detection completed!")
+            # annotated_image may be a path to image; ensure it exists
+            annotated = results.get("annotated_image")
+            if annotated and os.path.exists(annotated):
+                st.image(annotated, caption="Annotated Image", use_column_width=True)
+                with open(annotated, "rb") as f:
+                    st.download_button("Download annotated image", f, file_name=os.path.basename(annotated))
+            # zip file
+            z = results.get("zip_file")
+            if z and os.path.exists(z):
+                with open(z, "rb") as f:
+                    st.download_button("Download crops ZIP", f, file_name=os.path.basename(z))
             st.json(results)
-
-st.markdown("<p class='center' style='margin-top:3rem;'>See. Scan. Detect. — the NoVA way.</p>", unsafe_allow_html=True)
