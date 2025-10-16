@@ -17,7 +17,6 @@ st.write("Upload an image to detect eyes and get annotated results.")
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    # Save uploaded image temporarily
     temp_dir = "temp_uploads"
     os.makedirs(temp_dir, exist_ok=True)
     image_path = os.path.join(temp_dir, uploaded_file.name)
@@ -30,6 +29,7 @@ if uploaded_file:
         try:
             with st.spinner("Detecting eyes..."):
                 output_dir = "output_streamlit"
+                os.makedirs(output_dir, exist_ok=True)
                 result = detect_eyes(image_path, output_dir)
 
             st.success(f"✅ Detected {result['num_eyes']} eyes!")
@@ -39,10 +39,11 @@ if uploaded_file:
             st.image(annotated_image, caption="Annotated Image", use_column_width=True)
 
             # Display cropped eyes
-            st.write("Cropped Eyes:")
-            for crop_path in result["saved_eyes"]:
-                crop_img = Image.open(crop_path)
-                st.image(crop_img, width=150)
+            if result["saved_eyes"]:
+                st.write("Cropped Eyes:")
+                for crop_path in result["saved_eyes"]:
+                    crop_img = Image.open(crop_path)
+                    st.image(crop_img, width=150)
 
             # Provide ZIP download
             with open(result["zip_file"], "rb") as f:
@@ -55,3 +56,8 @@ if uploaded_file:
 
         except Exception as e:
             st.error(f"Error: {e}")
+
+        finally:
+            # Clean up uploaded file
+            if os.path.exists(image_path):
+                os.remove(image_path)
