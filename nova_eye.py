@@ -93,11 +93,12 @@ def main():
         "zip_file": zip_filename
     }
 
-    # ✅ Ensure only clean JSON to stdout
-    sys.stdout.write(json.dumps(output, ensure_ascii=False))
-    sys.stdout.flush()
+    # ✅ Only JSON to stdout
+    print(json.dumps(output, ensure_ascii=False), flush=True)
+    # Any logs go to stderr
     print("✅ Eye detection completed successfully.", file=sys.stderr)
 
 
 if __name__ == "__main__":
     main()
+
