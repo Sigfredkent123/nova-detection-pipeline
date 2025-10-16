@@ -32,21 +32,19 @@ def find_first_json(text: str):
                 depth -= 1
                 if depth == 0 and start_idx is not None:
                     candidate = text[start_idx : i + 1]
-                    try:
-                        return json.loads(candidate)
-                    except json.JSONDecodeError:
-                        start_idx = None
-                        depth = 0
+                    return candidate  # return raw string
     return None
-
 
 def extract_json_from_process_result(proc):
-    # prefer stdout, fallback to stderr
     for stream_text in [proc.stdout, proc.stderr]:
-        candidate = find_first_json(stream_text)
-        if candidate:
-            return candidate
+        candidate_str = find_first_json(stream_text)
+        if candidate_str:
+            try:
+                return json.loads(candidate_str)
+            except Exception as e:
+                return {"error": f"Failed to parse JSON: {str(e)}"}
     return None
+
 
 
 # -------------------------
@@ -130,3 +128,4 @@ if uploaded_file:
                     )
 
             st.json(results)
+
