@@ -1,26 +1,28 @@
 # nova_eye.py
 # -*- coding: utf-8 -*-
 """
-NOVA Eye Detection - Pipeline Compatible for Streamlit/Render
+NOVA Eye Detection - Pipeline Compatible
 """
 
-import os
-import json
-import zipfile
+import sys, os, json, zipfile
 from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 
-# Initialize Roboflow client once
-client = InferenceHTTPClient(
-    api_url="https://serverless.roboflow.com",
-    api_key="rXklt59qJc3uGQUVi7iZ"
-)
-
-def detect_eyes(image_path, output_dir="output/eye"):
+def main(image_path, output_dir="output/eye"):
     os.makedirs(output_dir, exist_ok=True)
 
     if not os.path.exists(image_path):
         return {"error": f"File not found: {image_path}"}
+
+    # Connect to Roboflow Workflow using API key from environment variable
+    api_key = os.getenv("ROBOFLOW_API_KEY")
+    if not api_key:
+        return {"error": "ROBOFLOW_API_KEY environment variable not set"}
+
+    client = InferenceHTTPClient(
+        api_url="https://serverless.roboflow.com",
+        api_key=api_key
+    )
 
     try:
         result = client.run_workflow(
@@ -68,7 +70,7 @@ def detect_eyes(image_path, output_dir="output/eye"):
     with zipfile.ZipFile(zip_filename, "w") as zipf:
         for root, _, files in os.walk(crop_dir):
             for file in files:
-                zipf.write(os.path.join(root, file), arcname=file)
+                zipf.write(os.path.join(root, file))
 
     return {
         "image": image_path,
@@ -77,3 +79,12 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "saved_eyes": saved_crops,
         "zip_file": zip_filename
     }
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "Usage: python nova_eye.py <image_path> [output_dir]"}))
+        sys.exit(1)
+    image_path = sys.argv[1]
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else "output/eye"
+    result = main(image_path, output_dir)
+    print(json.dumps(result, ensure_ascii=False))
