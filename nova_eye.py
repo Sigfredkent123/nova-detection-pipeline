@@ -10,27 +10,19 @@ from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 import streamlit as st
 
-
 def extract_predictions(result):
     """
-    Safely extract the list of predictions from run_workflow result.
-    Handles nested structures returned by Roboflow.
+    Safely extract the list of prediction boxes from run_workflow result.
     """
-    if not result or not isinstance(result, list):
-        return []
-
-    first_item = result[0]
-    if not isinstance(first_item, dict):
-        return []
-
-    outer = first_item.get("predictions", {})
-    if isinstance(outer, dict):
-        return outer.get("predictions", [])
-    elif isinstance(outer, list):
-        return outer
-    else:
-        return []
-
+    if isinstance(result, list) and len(result) > 0:
+        first = result[0]  # first element is a dict
+        if isinstance(first, dict):
+            outer = first.get("predictions", {})
+            if isinstance(outer, dict):
+                return outer.get("predictions", [])
+            elif isinstance(outer, list):
+                return outer
+    return []
 
 def detect_eyes(image_path, output_dir="output/eye"):
     """
@@ -50,14 +42,18 @@ def detect_eyes(image_path, output_dir="output/eye"):
         api_key=api_key
     )
 
-    # Run workflow (pass image as list)
+    # Pass images as a list
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images=[image_path]  # ✅ must be a list
+        images=[image_path]
     )
 
-    # Extract predictions
+    # Debug print to verify structure
+    st.write("DEBUG: workflow result type:", type(result))
+    st.write(result)
+
+    # Extract predictions safely
     predictions = extract_predictions(result)
 
     # Annotate image
