@@ -10,26 +10,24 @@ from PIL import Image, ImageDraw, ImageFont
 from inference_sdk import InferenceHTTPClient
 import streamlit as st
 
-
 def extract_predictions(result):
     """
     Safely extract the list of predicted boxes from run_workflow result.
+    Returns an empty list if structure is unexpected.
     """
     if isinstance(result, list) and len(result) > 0:
         first = result[0]
-        if isinstance(first, dict) and "predictions" in first:
-            preds_dict = first["predictions"]
-            if isinstance(preds_dict, dict) and "predictions" in preds_dict:
-                return preds_dict["predictions"]
+        if isinstance(first, dict):
+            preds_dict = first.get("predictions", {})
+            if isinstance(preds_dict, dict):
+                return preds_dict.get("predictions", [])
             elif isinstance(preds_dict, list):
                 return preds_dict
     return []
 
-
 def detect_eyes(image_path, output_dir="output/eye"):
     """
-    Detect eyes using Roboflow workflow,
-    annotate image, save crops, and return metadata.
+    Detect eyes using Roboflow workflow, annotate image, save crops, and return metadata.
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -37,7 +35,9 @@ def detect_eyes(image_path, output_dir="output/eye"):
         raise FileNotFoundError(f"File not found: {image_path}")
 
     # Get API key from Streamlit secrets
-    api_key = st.secrets["roboflow_api_key"]
+    api_key = st.secrets.get("roboflow_api_key", None)
+    if not api_key:
+        raise ValueError("Roboflow API key not found in st.secrets!")
 
     client = InferenceHTTPClient(
         api_url="https://serverless.roboflow.com",
@@ -48,10 +48,9 @@ def detect_eyes(image_path, output_dir="output/eye"):
     result = client.run_workflow(
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
-        images={"image": image_path}  # removed use_cache
+        images={"image": image_path}
     )
 
-    # Robustly extract predictions
     predictions = extract_predictions(result)
 
     # Annotate image
@@ -92,7 +91,6 @@ def detect_eyes(image_path, output_dir="output/eye"):
             for file in files:
                 zipf.write(os.path.join(root, file))
 
-    # Return metadata
     return {
         "image": image_path,
         "annotated_image": annotated_path,
