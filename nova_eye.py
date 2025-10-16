@@ -34,7 +34,6 @@ def detect_eyes(image_path, output_dir="output/eye"):
         workspace_name="newnova-mkn50",
         workflow_id="custom-workflow-2",
         images={"image": image_path},
-        use_cache=True
     )
 
     # Extract predictions
@@ -87,3 +86,4 @@ def detect_eyes(image_path, output_dir="output/eye"):
         "zip_file": zip_filename,
         "predictions": predictions
     }
+
