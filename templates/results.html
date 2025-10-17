@@ -9,18 +9,31 @@
   <div class="container">
     <h1>Detection Results – {{ parameter|capitalize }}</h1>
 
-    {% if result.annotated_image %}
-      <div class="result-block">
+    <div class="image-comparison">
+      {% if result.original_image %}
+      <div class="image-box">
+        <h2>Original Image</h2>
+        <img src="{{ url_for('view_file', filename=result.original_image) }}" 
+             alt="Original" class="result-image">
+      </div>
+      {% endif %}
+
+      {% if result.annotated_image %}
+      <div class="image-box">
         <h2>Annotated Image</h2>
         <img src="{{ url_for('view_file', filename=result.annotated_image) }}" 
-             alt="Annotated Image" class="result-image">
+             alt="Annotated" class="result-image">
       </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <div class="info-block">
-      <p><strong>Detected Count:</strong> 
-         {{ result.num_eyes or result.num_palms or result.num_nails or 0 }}</p>
-      <p><strong>Saved Crops:</strong> {{ result.zip_file }}</p>
+      {% if result.num_eyes %}<p><strong>Detected Eyes:</strong> {{ result.num_eyes }}</p>{% endif %}
+      {% if result.num_palms %}<p><strong>Detected Palms:</strong> {{ result.num_palms }}</p>{% endif %}
+      {% if result.num_nails %}<p><strong>Detected Nails:</strong> {{ result.num_nails }}</p>{% endif %}
+      {% if result.zip_file %}
+      <p><strong>ZIP File:</strong> {{ result.zip_file }}</p>
+      {% endif %}
     </div>
 
     <div class="button-group">
