@@ -1,53 +1,81 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
-import subprocess, json, os, tempfile
+from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
+import subprocess
+import os
+import json
 
 app = Flask(__name__)
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# 🧠 Routes for pages
 @app.route('/')
-def index():
+def home():
     return render_template('index.html')
 
-@app.route('/camera/<scan_type>')
-def camera(scan_type):
-    return render_template('camera.html', scan_type=scan_type.capitalize())
+@app.route('/camera/<parameter>')
+def camera(parameter):
+    return render_template('camera.html', parameter=parameter)
 
-@app.route('/upload/<scan_type>', methods=['POST'])
-def upload(scan_type):
-    if 'image' not in request.files:
-        return "No image uploaded", 400
+# ✅ NEW: Serve files dynamically (images, zips, etc.)
+@app.route('/view/<path:filename>')
+def view_file(filename):
+    # filename is a relative path like "output/eye/annotated_xxx.png"
+    safe_path = os.path.normpath(filename)
+    if safe_path.startswith(".."):
+        return "Invalid path", 400
+    return send_from_directory(os.getcwd(), safe_path)
 
-    file = request.files['image']
-    if file.filename == '':
-        return "No file selected", 400
+# 🧠 Handle file uploads and run AI scripts
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    parameter = request.form.get("parameter")
+    image = request.files.get("image")
+
+    if not image:
+        return jsonify({"error": "No image uploaded."}), 400
 
     # Save uploaded image
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(filepath)
+    upload_dir = "uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    image_path = os.path.join(upload_dir, image.filename)
+    image.save(image_path)
 
-    # Run the correct detection script
-    if scan_type == "eye":
-        cmd = ["python3", "nova_eye.py", filepath]
-    elif scan_type == "palm":
-        cmd = ["python3", "finalpalm.py", filepath]
-    elif scan_type == "nail":
-        cmd = ["python3", "nova_nail.py", filepath]
-    else:
-        return "Invalid scan type", 400
+    # Select the corresponding script
+    scripts = {
+        "eye": "nova_eye.py",
+        "palm": "finalpalm.py",
+        "nail": "nova_nail.py"
+    }
 
-    # Execute the script
+    if parameter not in scripts:
+        return jsonify({"error": f"Invalid parameter: {parameter}"}), 400
+
+    script = scripts[parameter]
+    output_dir = f"output/{parameter}"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Run the selected script
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["python3", script, image_path, output_dir],
+            capture_output=True,
+            text=True,
+            check=True
+        )
         output = json.loads(result.stdout)
-    except Exception as e:
-        return jsonify({"error": str(e), "details": result.stderr if 'result' in locals() else None}), 500
+        # Normalize backslashes for HTML rendering
+        for k, v in output.items():
+            if isinstance(v, str):
+                output[k] = v.replace("\\", "/")
 
-    return render_template('results.html', result=output, scan_type=scan_type.capitalize())
+        return render_template("results.html", result=output, parameter=parameter)
 
-@app.route('/download/<path:filename>')
-def download(filename):
-    return send_file(filename, as_attachment=True)
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            "error": "Model execution failed.",
+            "stderr": e.stderr
+        }), 500
+    except json.JSONDecodeError:
+        return jsonify({"error": "Failed to parse model output."}), 500
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=5000, debug=True)
