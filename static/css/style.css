@@ -1,197 +1,138 @@
-/* === GLOBAL === */
+/* === GLOBAL STYLES === */
 body {
-  background-color: #f3f6fc;
-  font-family: 'Inter', sans-serif;
-  text-align: center;
-  color: #333;
   margin: 0;
-  padding: 2rem;
+  font-family: "Inter", sans-serif;
+  background-color: #eaf0ff;
+  color: #1e293b;
+  text-align: center;
+  line-height: 1.6;
 }
 
-h1, h2, h3 {
-  color: #111827;
-  font-weight: 700;
+header {
+  padding: 3rem 1rem 1rem;
 }
 
-.container {
-  max-width: 900px;
+h1 {
+  font-size: 2.5rem;
+  color: #1e3a8a;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+/* === CARD SECTION === */
+.cards-section {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding: 0 1rem 3rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 2rem 1.5rem;
+  width: 260px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.card img {
+  width: 100%;
+  max-width: 180px;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  color: #1e40af;
+  font-size: 1.3rem;
+  margin: 0.5rem 0;
+}
+
+.card p {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+/* === HOW IT WORKS SECTION === */
+.how-section {
+  background: #f8fbff;
+  padding: 3rem 1rem;
+}
+
+.how-section h2 {
+  color: #1e3a8a;
+  margin-bottom: 2rem;
+}
+
+.steps {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 2rem;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-/* === LANDING / SELECTION === */
-.landing {
-  margin-top: 4rem;
-}
-
-.landing h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.parameter-grid {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.parameter-btn {
-  background: white;
-  border: 2px solid #e0e0e0;
+.step {
+  background: #ffffff;
   border-radius: 14px;
-  padding: 2rem;
-  width: 180px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: all 0.25s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2rem 1.5rem;
+  width: 260px;
+  transition: all 0.3s ease;
 }
 
-.parameter-btn:hover {
-  border-color: #0059ff;
-  transform: scale(1.05);
+.step:hover {
+  transform: translateY(-5px);
 }
 
-/* === CAMERA PAGE === */
-.upload-box {
-  background: white;
-  border: 2px dashed #b0b0b0;
-  padding: 3rem 2rem;
-  border-radius: 16px;
-  margin: 2rem auto;
-  width: 80%;
-  max-width: 600px;
-  transition: all 0.3s;
-}
-
-.upload-box:hover {
-  border-color: #0059ff;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-label.file-label {
-  display: inline-block;
-  padding: 0.8rem 1.5rem;
-  background: #0059ff;
+.circle {
+  background-color: #2563eb;
   color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-label.file-label:hover {
-  background: #003fcc;
-}
-
-.preview {
-  margin-top: 1.5rem;
-}
-
-.preview img {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 12px;
-  border: 2px solid #ddd;
-}
-
-/* === RESULTS PAGE === */
-.image-comparison {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-  margin: 2rem 0;
+  font-weight: 700;
+  margin: 0 auto 1rem;
+  font-size: 1.1rem;
 }
 
-.image-box {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.step h3 {
+  color: #1e40af;
+  margin-bottom: 0.5rem;
 }
 
-.result-image {
-  max-width: 380px;
-  border-radius: 8px;
-  border: 2px solid #ddd;
+.step p {
+  color: #475569;
+  font-size: 0.95rem;
+  padding: 0 0.5rem;
 }
 
-.info-block {
-  background: #fff;
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-}
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .card, .step {
+    width: 90%;
+  }
 
-.button-group {
-  margin-top: 2rem;
+  h1 {
+    font-size: 2rem;
+  }
 }
-
-.btn {
-  display: inline-block;
-  background: #0059ff;
-  color: white;
-  padding: 0.7rem 1.4rem;
-  border-radius: 8px;
-  text-decoration: none;
-  margin: 0 0.5rem;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.btn:hover {
-  background: #003fcc;
-}
-.results-grid {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 40px;
-  margin-top: 40px;
-}
-
-.image-box {
-  text-align: center;
-}
-
-.preview {
-  max-width: 450px;
-  height: auto;
-  border-radius: 12px;
-  border: 2px solid #ccc;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.summary {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 1.2em;
-  color: #444;
-}
-
-.error {
-  color: red;
-  text-align: center;
-  font-size: 1.1em;
-}
-
-.button {
-  display: inline-block;
-  margin: 30px auto;
-  padding: 12px 24px;
-  background-color: #2b72ff;
-  color: white;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.button:hover {
-  background-color: #1f56c1;
-}
-
