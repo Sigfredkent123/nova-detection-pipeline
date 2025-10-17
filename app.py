@@ -5,7 +5,7 @@ import json
 
 app = Flask(__name__)
 
-# 🧠 Routes for pages
+# 🧠 ROUTES
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -14,16 +14,15 @@ def home():
 def camera(parameter):
     return render_template('camera.html', parameter=parameter)
 
-# ✅ NEW: Serve files dynamically (images, zips, etc.)
+# ✅ Serve any local file dynamically (images, zips, etc.)
 @app.route('/view/<path:filename>')
 def view_file(filename):
-    # filename is a relative path like "output/eye/annotated_xxx.png"
     safe_path = os.path.normpath(filename)
     if safe_path.startswith(".."):
         return "Invalid path", 400
     return send_from_directory(os.getcwd(), safe_path)
 
-# 🧠 Handle file uploads and run AI scripts
+# 🧠 Upload handler + model execution
 @app.route('/analyze', methods=['POST'])
 def analyze():
     parameter = request.form.get("parameter")
@@ -38,7 +37,7 @@ def analyze():
     image_path = os.path.join(upload_dir, image.filename)
     image.save(image_path)
 
-    # Select the corresponding script
+    # Select model script
     scripts = {
         "eye": "nova_eye.py",
         "palm": "finalpalm.py",
@@ -52,7 +51,7 @@ def analyze():
     output_dir = f"output/{parameter}"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Run the selected script
+    # Run the chosen model
     try:
         result = subprocess.run(
             ["python3", script, image_path, output_dir],
@@ -60,8 +59,12 @@ def analyze():
             text=True,
             check=True
         )
+
         output = json.loads(result.stdout)
-        # Normalize backslashes for HTML rendering
+        # Add the uploaded image path for rendering
+        output["original_image"] = image_path.replace("\\", "/")
+
+        # Normalize paths for template
         for k, v in output.items():
             if isinstance(v, str):
                 output[k] = v.replace("\\", "/")
