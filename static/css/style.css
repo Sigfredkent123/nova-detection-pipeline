@@ -147,3 +147,51 @@ label.file-label:hover {
 .btn:hover {
   background: #003fcc;
 }
+.results-grid {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.image-box {
+  text-align: center;
+}
+
+.preview {
+  max-width: 450px;
+  height: auto;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.summary {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2em;
+  color: #444;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  font-size: 1.1em;
+}
+
+.button {
+  display: inline-block;
+  margin: 30px auto;
+  padding: 12px 24px;
+  background-color: #2b72ff;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: #1f56c1;
+}
+
