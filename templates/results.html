@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NOVA - {{ parameter }} Detection Results</title>
+  <title>NoVA-Scan {{ parameter }} Results</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
+  <div class="results-container">
     <h1>{{ parameter }} Detection Results</h1>
 
     {% if error %}
@@ -16,20 +16,18 @@
       <div class="results-grid">
         <div class="image-box">
           <h2>Original Image</h2>
-          <img src="{{ original_image }}" alt="Original Image" class="preview">
+          <img src="{{ original_image }}" alt="Original" class="result-img">
         </div>
         <div class="image-box">
           <h2>Annotated Image</h2>
-          <img src="{{ annotated_image }}" alt="Annotated Image" class="preview">
+          <img src="{{ annotated_image }}" alt="Annotated" class="result-img">
         </div>
       </div>
 
-      <p class="summary">
-        Detected <strong>{{ num_objects }}</strong> object(s).
-      </p>
+      <p class="summary">Detected <strong>{{ num_objects }}</strong> object(s).</p>
     {% endif %}
 
-    <a href="/" class="button">Return Home</a>
+    <a href="/" class="btn back-btn">Return Home</a>
   </div>
 </body>
 </html>
