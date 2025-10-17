@@ -14,7 +14,7 @@ def main():
         return
 
     image_path = sys.argv[1]
-    output_dir = sys.argv[2] if len(sys.argv) > 2 else "output/eye"
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.join("static", "outputs", "eye")
     os.makedirs(output_dir, exist_ok=True)
 
     if not os.path.exists(image_path):
@@ -88,3 +88,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
