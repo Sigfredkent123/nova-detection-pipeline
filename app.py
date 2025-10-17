@@ -48,7 +48,7 @@ def analyze_image():
         script = "nova_eye.py"
     elif parameter == "palm":
         script = "finalpalm.py"
-    elif parameter == "nailbed":
+    elif parameter == "nail, nailbed":
         script = "nova_nail.py"
     else:
         return render_template("results.html", error="Invalid detection type")
@@ -68,8 +68,12 @@ def analyze_image():
         return render_template("results.html", error="Failed to parse model output")
 
     # === Prepare Image URLs for HTML ===
-    annotated_image = f"/{output_data.get('annotated_image', '')}"
-    original_image = f"/{input_path}"
+    annotated_rel = os.path.relpath(output_data.get("annotated_image", ""), start="static")
+    original_rel = os.path.relpath(input_path, start="static")
+    
+    annotated_image = url_for("static", filename=annotated_rel)
+    original_image = url_for("static", filename=original_rel)
+
 
     # === Count Detections ===
     num_objects = (
@@ -92,4 +96,5 @@ def analyze_image():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
 
