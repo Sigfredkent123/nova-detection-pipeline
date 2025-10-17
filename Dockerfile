@@ -23,5 +23,5 @@ COPY . .
 EXPOSE 10000
 
 # Run Flask app (Render injects $PORT automatically)
-CMD ["gunicorn", "-b", "0.0.0.0:${PORT}", "app:app"]
+CMD gunicorn -b 0.0.0.0:$PORT app:app
 
