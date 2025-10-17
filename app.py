@@ -24,7 +24,8 @@ def index():
 
 @app.route("/camera")
 def camera():
-    return render_template("camera.html")
+    parameter = request.args.get("parameter", "")
+    return render_template("camera.html", parameter=parameter)
 
 @app.route("/analyze", methods=["POST"])
 def analyze_image():
@@ -91,3 +92,4 @@ def analyze_image():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
