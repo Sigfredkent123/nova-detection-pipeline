@@ -10,7 +10,8 @@
     <h1>{{ parameter|capitalize }} Detection</h1>
     <p>Upload or capture an image for {{ parameter }} detection.</p>
 
-    <form action="/upload/{{ parameter }}" method="POST" enctype="multipart/form-data" class="upload-form">
+    <form action="{{ url_for('analyze_image') }}" method="POST" enctype="multipart/form-data" class="upload-form">
+      <input type="hidden" name="parameter" value="{{ parameter }}">
       <input type="file" name="file" accept="image/*" required>
       <button type="submit" class="btn">Upload & Analyze</button>
     </form>
