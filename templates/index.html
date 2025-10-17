@@ -1,57 +1,41 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>NoVA-SCAN</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
-    <h1 class="title">What is NoVA-SCAN</h1>
-    <p class="subtitle">
-      NoVA-Scan is an AI-powered web application that automatically detects key areas
-      from your image — the Eyes, Palm, and Nail Beds — using advanced object detection technology (YOLO).
-    </p>
+  <div class="container landing">
+    <h1>NOVA Detection Portal</h1>
+    <p>Select the parameter you want to analyze:</p>
 
-    <div class="card-container">
-      <div class="card" onclick="location.href='/camera/eye'">
-        <img src="{{ url_for('static', filename='images/eye.jpg') }}" alt="Eye">
-        <h2>Eyes</h2>
-        <p>Let NoVA-Scan detect your eye region automatically for a clear and accurate image.</p>
-      </div>
+    <div class="parameter-grid">
+      <form action="/camera" method="get">
+        <input type="hidden" name="parameter" value="eye">
+        <button class="parameter-btn" type="submit">
+          <img src="{{ url_for('static', filename='images/eye.png') }}" alt="Eye" style="width:100px; height:100px; border-radius:12px; margin-bottom:1rem;">
+          <br>Eye Detection
+        </button>
+      </form>
 
-      <div class="card" onclick="location.href='/camera/palm'">
-        <img src="{{ url_for('static', filename='images/palm.jpg') }}" alt="Palm">
-        <h2>Palm</h2>
-        <p>Your palm area is identified instantly, helping the AI prepare it for detailed analysis.</p>
-      </div>
+      <form action="/camera" method="get">
+        <input type="hidden" name="parameter" value="palm">
+        <button class="parameter-btn" type="submit">
+          <img src="{{ url_for('static', filename='images/palm.png') }}" alt="Palm" style="width:100px; height:100px; border-radius:12px; margin-bottom:1rem;">
+          <br>Palm Detection
+        </button>
+      </form>
 
-      <div class="card" onclick="location.href='/camera/nail'">
-        <img src="{{ url_for('static', filename='images/nail.jpg') }}" alt="Nail">
-        <h2>Nail Beds</h2>
-        <p>NoVA-Scan pinpoints your nail area so the system can focus on the right details.</p>
-      </div>
-    </div>
-
-    <div class="how-it-works">
-      <h2>How It Works</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="circle">1</div>
-          <h3>Capture or Upload</h3>
-          <p>Take a photo or upload an image showing your eyes, palm, or nails using your device’s camera.</p>
-        </div>
-        <div class="step">
-          <div class="circle">2</div>
-          <h3>AI Detection</h3>
-          <p>NoVA-Scan uses advanced YOLO object detection to automatically locate and outline key regions.</p>
-        </div>
-        <div class="step">
-          <div class="circle">3</div>
-          <h3>Review Results</h3>
-          <p>View the detected areas and confirm accuracy before saving the output.</p>
-        </div>
-      </div>
+      <form action="/camera" method="get">
+        <input type="hidden" name="parameter" value="nail">
+        <button class="parameter-btn" type="submit">
+          <img src="{{ url_for('static', filename='images/nail.png') }}" alt="Nailbed" style="width:100px; height:100px; border-radius:12px; margin-bottom:1rem;">
+          <br>Nailbed Detection
+        </button>
+      </form>
     </div>
   </div>
 </body>
