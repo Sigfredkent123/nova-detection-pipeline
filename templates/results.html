@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NoVA-Scan {{ parameter }} Results</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>NoVA - {{ parameter|capitalize }} Detection Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <div class="results-container">
-    <h1>{{ parameter }} Detection Results</h1>
+  <div class="container results">
+    <h1>{{ parameter|capitalize }} Detection Results</h1>
 
     {% if error %}
       <p class="error">{{ error }}</p>
@@ -16,18 +16,20 @@
       <div class="results-grid">
         <div class="image-box">
           <h2>Original Image</h2>
-          <img src="{{ original_image }}" alt="Original" class="result-img">
+          <img src="{{ original_image }}" alt="Original Image" class="preview">
         </div>
         <div class="image-box">
           <h2>Annotated Image</h2>
-          <img src="{{ annotated_image }}" alt="Annotated" class="result-img">
+          <img src="{{ annotated_image }}" alt="Annotated Image" class="preview">
         </div>
       </div>
 
-      <p class="summary">Detected <strong>{{ num_objects }}</strong> object(s).</p>
+      <p class="summary">
+        Detected <strong>{{ num_objects }}</strong> object(s).
+      </p>
     {% endif %}
 
-    <a href="/" class="btn back-btn">Return Home</a>
+    <a href="/" class="btn">Return Home</a>
   </div>
 </body>
 </html>
