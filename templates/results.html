@@ -2,23 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ scan_type }} Results</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <title>NoVA-SCAN Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <h1>{{ scan_type }} Detection Results</h1>
+    <h1>Detection Results – {{ parameter|capitalize }}</h1>
 
-    {% if result.error %}
-      <p class="error">Error: {{ result.error }}</p>
-    {% else %}
-      <img src="{{ result.annotated_image }}" alt="Annotated Result" class="result-image">
-      <p><strong>Detected {{ scan_type.lower() }}s:</strong> {{ result.num_eyes or result.num_palms or result.num_nails }}</p>
-
-      <a href="/download/{{ result.zip_file }}" class="download-btn">Download Crops (ZIP)</a>
+    {% if result.annotated_image %}
+      <div class="result-block">
+        <h2>Annotated Image</h2>
+        <img src="{{ url_for('view_file', filename=result.annotated_image) }}" 
+             alt="Annotated Image" class="result-image">
+      </div>
     {% endif %}
 
-    <a href="/" class="back-link">← Back to Home</a>
+    <div class="info-block">
+      <p><strong>Detected Count:</strong> 
+         {{ result.num_eyes or result.num_palms or result.num_nails or 0 }}</p>
+      <p><strong>Saved Crops:</strong> {{ result.zip_file }}</p>
+    </div>
+
+    <div class="button-group">
+      <a href="/" class="btn">Back to Home</a>
+      <a href="{{ url_for('camera', parameter=parameter) }}" class="btn">Try Again</a>
+    </div>
   </div>
 </body>
 </html>
