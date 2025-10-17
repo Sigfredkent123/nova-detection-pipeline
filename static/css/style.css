@@ -1,143 +1,149 @@
+/* === GLOBAL === */
 body {
-  background-color: #eaf1ff;
-  font-family: 'Segoe UI', sans-serif;
-  color: #222;
+  background-color: #f3f6fc;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  color: #333;
   margin: 0;
-  padding: 0;
+  padding: 2rem;
+}
+
+h1, h2, h3 {
+  color: #111827;
+  font-weight: 700;
 }
 
 .container {
-  text-align: center;
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px;
 }
 
-.title {
-  color: #0033cc;
-  font-size: 2em;
-  margin-bottom: 10px;
+/* === LANDING / SELECTION === */
+.landing {
+  margin-top: 4rem;
 }
 
-.subtitle {
-  color: #444;
-  margin-bottom: 40px;
-  font-size: 1.1em;
+.landing h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.card-container {
+.parameter-grid {
   display: flex;
   justify-content: center;
-  gap: 25px;
+  gap: 2rem;
   flex-wrap: wrap;
-  margin-bottom: 60px;
 }
 
-.card {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  width: 250px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.parameter-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 2rem;
+  width: 180px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.25s ease-in-out;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+.parameter-btn:hover {
+  border-color: #0059ff;
+  transform: scale(1.05);
 }
 
-.card img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 15px;
+/* === CAMERA PAGE === */
+.upload-box {
+  background: white;
+  border: 2px dashed #b0b0b0;
+  padding: 3rem 2rem;
+  border-radius: 16px;
+  margin: 2rem auto;
+  width: 80%;
+  max-width: 600px;
+  transition: all 0.3s;
 }
 
-.card h2 {
-  color: #0033cc;
-  margin-bottom: 10px;
+.upload-box:hover {
+  border-color: #0059ff;
 }
 
-.how-it-works h2 {
-  color: #0033cc;
-  margin-bottom: 25px;
+input[type="file"] {
+  display: none;
 }
 
-.steps {
+label.file-label {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  background: #0059ff;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+label.file-label:hover {
+  background: #003fcc;
+}
+
+.preview {
+  margin-top: 1.5rem;
+}
+
+.preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+}
+
+/* === RESULTS PAGE === */
+.image-comparison {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 2rem;
   flex-wrap: wrap;
-  gap: 25px;
+  margin: 2rem 0;
 }
 
-.step {
-  width: 250px;
+.image-box {
   background: #fff;
+  padding: 1rem;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.circle {
-  width: 40px;
-  height: 40px;
-  background-color: #0033cc;
-  color: #fff;
-  font-weight: bold;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-
-.upload-form {
-  margin: 30px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.upload-form input {
-  padding: 10px;
-  font-size: 1em;
-}
-
-.upload-form button {
-  background-color: #0033cc;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.upload-form button:hover {
-  background-color: #002699;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .result-image {
-  width: 400px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  margin-bottom: 20px;
+  max-width: 380px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
 }
 
-.download-btn {
-  background-color: #0033cc;
+.info-block {
+  background: #fff;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+}
+
+.button-group {
+  margin-top: 2rem;
+}
+
+.btn {
+  display: inline-block;
+  background: #0059ff;
   color: white;
-  padding: 10px 20px;
+  padding: 0.7rem 1.4rem;
   border-radius: 8px;
   text-decoration: none;
+  margin: 0 0.5rem;
+  font-weight: 600;
+  transition: background 0.3s;
 }
 
-.back-link {
-  display: block;
-  margin-top: 20px;
-  color: #0033cc;
-  text-decoration: none;
+.btn:hover {
+  background: #003fcc;
 }
