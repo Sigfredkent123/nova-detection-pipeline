@@ -11,7 +11,7 @@
     <p>Upload or capture an image for {{ parameter }} detection.</p>
 
     <form action="/upload/{{ parameter }}" method="POST" enctype="multipart/form-data" class="upload-form">
-      <input type="file" name="image" accept="image/*" required>
+      <input type="file" name="file" accept="image/*" required>
       <button type="submit" class="btn">Upload & Analyze</button>
     </form>
 
