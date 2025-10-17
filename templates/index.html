@@ -1,62 +1,58 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoVA-Scan</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <header>
+  <header class="hero">
     <h1>What is NoVA-SCAN</h1>
-    <p class="subtitle">
-      NoVA-Scan is an AI-powered web application that automatically detects key areas from your image — 
-      the <strong>Eyes</strong>, <strong>Palm</strong>, and <strong>Nail Beds</strong> — using advanced object detection technology (YOLO).
-    </p>
+    <p>NoVA-Scan is an AI-powered web application that automatically detects key areas from your image — the Eyes, Palm, and Nail Beds — using advanced object detection technology (YOLO).</p>
   </header>
 
-  <main>
-    <section class="cards-section">
-      <div class="card" onclick="window.location.href='/camera?parameter=eye'">
-        <img src="{{ url_for('static', filename='images/eye.png') }}" alt="Eye">
-        <h2>Eyes</h2>
+  <section class="card-section">
+    <div class="card-grid">
+      <a href="/camera?parameter=eye" class="card">
+        <img src="{{ url_for('static', filename='images/eye.png') }}" alt="Eye" />
+        <h3>Eyes</h3>
         <p>Let NoVA-Scan detect your eye region automatically for a clear and accurate image.</p>
-      </div>
+      </a>
 
-      <div class="card" onclick="window.location.href='/camera?parameter=palm'">
-        <img src="{{ url_for('static', filename='images/palm.png') }}" alt="Palm">
-        <h2>Palm</h2>
+      <a href="/camera?parameter=palm" class="card">
+        <img src="{{ url_for('static', filename='images/palm.png') }}" alt="Palm" />
+        <h3>Palm</h3>
         <p>Your palm area is identified instantly, helping the AI prepare it for detailed analysis.</p>
-      </div>
+      </a>
 
-      <div class="card" onclick="window.location.href='/camera?parameter=nailbed'">
-        <img src="{{ url_for('static', filename='images/nail.png') }}" alt="Nail Beds">
-        <h2>Nail Beds</h2>
+      <a href="/camera?parameter=nail" class="card">
+        <img src="{{ url_for('static', filename='images/nail.png') }}" alt="Nail Beds" />
+        <h3>Nail Beds</h3>
         <p>NoVA-Scan pinpoints your nail area so the system can focus on the right details.</p>
-      </div>
-    </section>
+      </a>
+    </div>
+  </section>
 
-    <section class="how-section">
-      <h2>How It Works</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="circle">1</div>
-          <h3>Capture or Upload</h3>
-          <p>Take a photo or upload an image showing your eyes, palm, or nail beds using your device's camera.</p>
-        </div>
-        <div class="step">
-          <div class="circle">2</div>
-          <h3>AI Detection</h3>
-          <p>NoVA-Scan uses advanced YOLO object detection to automatically locate and outline the key regions in your image.</p>
-        </div>
-        <div class="step">
-          <div class="circle">3</div>
-          <h3>Review Results</h3>
-          <p>View the detected areas and confirm accuracy before moving to the next step or saving the output.</p>
-        </div>
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="number">1</div>
+        <h4>Capture or Upload</h4>
+        <p>Take a photo or upload an image showing your eyes, palm, or nail beds using your device's camera.</p>
       </div>
-    </section>
-  </main>
+      <div class="step">
+        <div class="number">2</div>
+        <h4>AI Detection</h4>
+        <p>NoVA-Scan uses advanced YOLO object detection to automatically locate and outline the key regions in your image.</p>
+      </div>
+      <div class="step">
+        <div class="number">3</div>
+        <h4>Review Results</h4>
+        <p>View the detected areas and confirm accuracy before moving to the next step or saving the output.</p>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
