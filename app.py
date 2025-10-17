@@ -48,7 +48,7 @@ def analyze_image():
         script = "nova_eye.py"
     elif parameter == "palm":
         script = "finalpalm.py"
-    elif parameter == "nail, nailbed":
+    elif parameter in ["nail", "nailbed"]:
         script = "nova_nail.py"
     else:
         return render_template("results.html", error="Invalid detection type")
@@ -96,5 +96,6 @@ def analyze_image():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
 
 
